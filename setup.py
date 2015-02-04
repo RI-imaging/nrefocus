@@ -25,7 +25,7 @@ try:
     import os
     sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/"+name)
     # get version number
-    from nr_version import __version__ as version
+    from _nr_version import __version__ as version
 except:
     version = "unknown"
 

@@ -30,10 +30,11 @@ def refocus(field, distance, nm, res, method="helmholtz"):
     -------
     Electric field at that distance
     """
-
+    pass
+    
 
 def fft_propagate(fftfield, distance, nm, res, method="helmholtz",
-                  ret_fft=False)
+                  ret_fft=False):
     """ Propagates a 1D or 2D field a certain distance in pixels
     
     Parameters

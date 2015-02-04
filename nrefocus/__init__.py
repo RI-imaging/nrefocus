@@ -14,7 +14,7 @@
 #_fftwflags = ["estimate"]
 
 
-from .nr_version import __version__
+from ._nr_version import __version__
 from ._autofocus import *
 from ._propagate import *
 

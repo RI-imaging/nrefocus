@@ -98,10 +98,12 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     
     loc = locals()
     vardict = dict()
-
     for name in names:
         if loc.has_key(name):
             vardict[name] = loc[name]
+    # default keyword arguments
+    func_def = func.__defaults__[::-1]
+    
     
     # child processes should only use one cpu
     vardict["num_cpus"] = 1
@@ -126,13 +128,13 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
 
 
     p = mp.Pool(num_cpus)
-    result = p.map_async(refocus, stackargs).get()
+    result = p.map_async(_refocus_wrapper, stackargs).get()
     p.close()
     p.terminate()
     p.join()    
 
     if copy:
-        data = np.zeros([M]+result[0].shape, dtype=result[0].dtype)
+        data = np.zeros([M]+list(result[0].shape), dtype=result[0].dtype)
     else:
         data = fieldstack
         
@@ -309,3 +311,9 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
         return fftfield*fstemp
     else:
         return np.fft.ifft(fftfield*fstemp)
+
+
+def _refocus_wrapper(args):
+    """Just calls autofocus with *args. Needed for multiprocessing pool.
+    """
+    return refocus(*args)

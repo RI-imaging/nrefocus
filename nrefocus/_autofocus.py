@@ -7,12 +7,12 @@ import numpy as np
 
 
 from . import metrics
-from ._propagte import fft_propagate, refocus, refocus_stack
+from ._propagate import fft_propagate, refocus, refocus_stack
 
 
 __all__ = [
-            "autofocus_field",
-            "autofocus_sinogram",
+            "autofocus",
+            "autofocus_stack",
             "minimize_metric",
           ]
 
@@ -21,9 +21,9 @@ _cpu_count = mp.cpu_count()
 
 
 
-def autofocus_field(field, nm, res, ival, roi=None,
-                    metric="average gradient",
-                    ret_d=False, ret_grad=False, num_cpus=1):
+def autofocus(field, nm, res, ival, roi=None,
+              metric="average gradient",
+              ret_d=False, ret_grad=False, num_cpus=1):
     """ Numerical autofocusing of a field using the Helmholtz equation.
 
 
@@ -67,7 +67,7 @@ def autofocus_field(field, nm, res, ival, roi=None,
     else:
         raise ValueError("No such metric: {}".format(metric))
     
-    field, d, grad = minimize_metric(field, metric_func, nm, res, ival
+    field, d, grad = minimize_metric(field, metric_func, nm, res, ival,
                                      roi=roi)
     
     ret_list = [field]
@@ -83,7 +83,7 @@ def autofocus_field(field, nm, res, ival, roi=None,
 
 
 
-def autofocus_stack(fieldstack, nm, res, ival, roi,
+def autofocus_stack(fieldstack, nm, res, ival, roi=None,
                     metric="average gradient",
                     same_dist=False, ret_ds=False, ret_grads=False,
                     num_cpus=_cpu_count, copy=True):
@@ -130,7 +130,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi,
                           True, True, 1])
     # perform first pass
     p = mp.Pool(num_cpus)
-    result = p.map_async(autofocus_field, stackargs).get()
+    result = p.map_async(_autofocus_wrapper, stackargs).get()
     p.close()
     p.terminate()
     p.join()
@@ -144,7 +144,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi,
         newstack[s] = field
     
     # perform second pass if `same_dist` is True
-    if same_dist and d is None:
+    if same_dist:
         # find average dopt
         davg = np.average(dopt)
 
@@ -194,12 +194,7 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
         assert len(roi) == len(field.shape)*2, "ROI must match field dimension"
     
     Fshape = len(field.shape)
-    if Fshape == 1:
-        propfunc = free_space_propagate_1d
-    elif Fshape == 2:
-        propfunc = free_space_propagate_2d
-    else:
-        raise ValueError("Unsupported dimension: {}".format(Fshape))
+    propfunc = fft_propagate
     
     if roi is None:
         if Fshape == 2:
@@ -227,9 +222,9 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
         #fsp = propfunc(fftfield, d, nm, lambd, fftplan=fftplan)
         fsp = propfunc(fftfield, d, nm, lambd)
         if Fshape == 2:
-            gradc[i] = metric(fsp[roi[0]:roi[2], roi[1]:roi[3]])
+            gradc[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
         else:
-            gradc[i] = metric(fsp[roi[0]:roi[1]])
+            gradc[i] = metric_func(fsp[roi[0]:roi[1]])
     
     minid = np.argmin(gradc)
     if minid == 0:
@@ -253,9 +248,9 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
             #fsp = propfunc(fftfield, d, nm, lambd, fftplan=fftplan)
             fsp = propfunc(fftfield, d, nm, lambd)
             if Fshape == 2:
-                gradf[i] = metric(fsp[roi[0]:roi[2], roi[1]:roi[3]])
+                gradf[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
             else:
-                gradf[i] = metric(fsp[roi[0]:roi[1]])
+                gradf[i] = metric_func(fsp[roi[0]:roi[1]])
         minid = np.argmin(gradf)
         if minid == 0:
             zf -= zf[1]-zf[0]
@@ -272,3 +267,10 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
     if return_gradient:
         return fsp, zf[minid], [(zc, gradc), (zf,gradf)]
     return fsp, zf[minid] 
+
+
+def _autofocus_wrapper(args):
+    """Just calls autofocus with *args. Needed for multiprocessing pool.
+    """
+    return autofocus(*args)
+    

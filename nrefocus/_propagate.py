@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
+
 import numpy as np
 
 __all__ = ["refocus", "fft_propagate"]
 
 
+
 def refocus(field, distance, nm, res, method="helmholtz"):
-    """ Propagate a 1D field a certain distance in pixels
+    """ Propagate a 1D or 2D field a certain distance in pixels
     
     Parameters
     ----------
@@ -30,12 +32,29 @@ def refocus(field, distance, nm, res, method="helmholtz"):
     -------
     Electric field at that distance
     """
-    pass
+    # FFT of field
+    fshape = len(field.shape)
+    assert fshape in [1,2], "Dimension of `field` must be 1 or 2."
+
+    func = fft_propagate
+    names = func.__code__.co_varnames[:func.__code__.co_argcount]
     
+    loc = locals()
+    vardict = dict()
+
+    for name in names:
+        if loc.has_key(name):
+            vardict[name] = loc[name]
+
+    vardict["fftfield"] = np.fft.fft(field)
+    
+    return func(**vardict)
+
+
 
 def fft_propagate(fftfield, distance, nm, res, method="helmholtz",
                   ret_fft=False):
-    """ Propagates a 1D or 2D field a certain distance in pixels
+    """ Propagates a 1D or 2D Fourier transformed field
     
     Parameters
     ----------
@@ -60,14 +79,31 @@ def fft_propagate(fftfield, distance, nm, res, method="helmholtz",
                 
     Returns
     -------
-    Electric field at that distance
+    Electric field at that distance. If `ret_fft` is True, then the
+    Fourier transform of the electric field will be returned (faster).
     """
-    pass
+    fshape = len(fftfield.shape)
+    assert fshape in [1,2], "Dimension of `fftfield` must be 1 or 2."
+    
+    if fshape == 1:
+        func = fft_propagate_2d
+    else:
+        func = fft_propagate_3d
+
+    names = func.__code__.co_varnames[:func.__code__.co_argcount]
+
+    loc = locals()
+    vardict = dict()
+    for name in names:
+        vardict[name] = loc[name]
+    
+    return func(**vardict)
+
 
 
 def fft_propagate_2d(fftfield, distance, nm, res, method="helmholtz",
                      ret_fft=False):
-    """ Propagate a 1D field in 2D a certain distance in pixels
+    """ Propagate a 1D  Fourier transformed field in 2D
     
     Parameters
     ----------
@@ -92,9 +128,10 @@ def fft_propagate_2d(fftfield, distance, nm, res, method="helmholtz",
                 
     Returns
     -------
-    Electric field at that distance
+    Electric field at that distance. If `ret_fft` is True, then the
+    Fourier transform of the electric field will be returned (faster).
     """
-
+    assert len(fftfield.shape)==1, "Dimension of `fftfield` must be 1."
     l0 = distance
     km = (2*np.pi*nm)/res
     kx = np.fft.fftfreq(len(fftfield))*2*np.pi
@@ -120,9 +157,10 @@ def fft_propagate_2d(fftfield, distance, nm, res, method="helmholtz",
         return np.fft.ifft(fftfield*fstemp)
 
 
+
 def fft_propagate_3d(fftfield, distance, nm, res, method="helmholtz",
                      ret_fft=False):
-    """ Propagate a 2D field in 3D a certain distance in pixels
+    """ Propagate a 2D  Fourier transformed field in 3D
     
     Parameters
     ----------
@@ -147,8 +185,10 @@ def fft_propagate_3d(fftfield, distance, nm, res, method="helmholtz",
                
     Returns
     -------
-    Electric field at that distance. If
+    Electric field at that distance. If `ret_fft` is True, then the
+    Fourier transform of the electric field will be returned (faster).
     """
+    assert len(fftfield.shape)==1, "Dimension of `fftfield` must be 1."
     #if fftfield.shape[0] != fftfield.shape[1]:
     #    raise NotImplementedError("Field must be square shaped.")
     # free space propagator is

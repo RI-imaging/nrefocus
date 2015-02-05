@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
 
+import multiprocessing as mp
 import numpy as np
 
+
 from . import metrics
+from ._propagte import fft_propagate, refocus, refocus_stack
+
 
 __all__ = [
             "autofocus_field",
@@ -12,83 +16,83 @@ __all__ = [
             "minimize_metric",
           ]
 
-def autofocus_field(Field, nm, res, ival=None, roi=None,
-                    norm="average gradient", d=None):
-    """ Perform numerical autofocusing
-    
+
+_cpu_count = mp.cpu_count()
+
+
+
+def autofocus_field(field, nm, res, ival, roi=None,
+                    metric="average gradient",
+                    ret_d=False, ret_grad=False, num_cpus=1):
+    """ Numerical autofocusing of a field using the Helmholtz equation.
+
+
     Parameters
     ----------
-    Field : 1d or 2d ndarray
-        Electric field is BG-Corrected, i.e. Field = EX/BEx
+    field : 1d or 2d ndarray
+        Electric field is BG-Corrected, i.e. field = EX/BEx
     nm : float
-        Refractive index of medeium.
+        Refractive index of medium.
     res : float
         Size of wavelength in pixels.
     ival : tuple of floats
         Approximate interval to search for optimal focus in px.
-    roi : rectangular region of interest (x1,y1,x2,y2)
-        Region of interest of `Field` for which the norm will be
-        minimized. If not given, the entire `Field` will be used.
-    d : None or float
-        No autofocusing. Refocus to focus position `d`.
-    norm : str
-        - "average gradient" : average gradient norm of amplitude
+    roi : rectangular region of interest (x1, y1, x2, y2)
+        Region of interest of `field` for which the metric will be
+        minimized. If not given, the entire `field` will be used.
+    metric : str
+        - "average gradient" : average gradient metric of amplitude
         - "rms contrast" : RMS contrast of phase data
         - "spectrum" : sum of filtered Fourier coefficients
+    red_d : bool
+        Return the autofocusing distance in pixels. Defaults to False.
+    red_grad : bool
+        Return the computed gradients as a list.
+    num_cpus : int
+        Not implemented.
         
+
     Returns
     -------
-    The focused field (and the refocussing distance + data if d is None)
+    field, [d, [grad]]
+    The focused field and optionally, the optimal focusing distance and
+    the computed gradients.
     """
-    Fshape = len(Field.shape)
-    if Fshape == 1:
-        propfunc = free_space_propagate_1d
-    elif Fshape == 2:
-        propfunc = free_space_propagate_2d
+    if metric == "average gradient":
+        metric_func = lambda x: metrics.average_gradient(np.abs(x))
+    elif metric == "rms contrast":
+        metric_func = lambda x: -metrics.contrast_rms(np.angle(x))
+    elif metric == "spectrum":
+        metric_func = lambda x: metrics.spectral(np.abs(x),res)
     else:
-        raise ValueError("Unsupported dimension: {}".format(Fshape))
-
-
-    if d is not None:
-        if roi is None:
-            if Fshape == 2:
-                roi = (0,0,Field.shape[0], Field.shape[1])
-            else:
-                roi = (0,Field.shape[0])
-        fftfield = np.fft.fftn(Field)   
-        #if not Field.dtype == np.dtype(np.complex):
-        #    Field = np.array(Field, dtype=np.complex)
-        # 
-        ## Set up fast fourier transform
-        #fftplan = fftw3.Plan(Field.copy(), None, nthreads = _ncores,
-        #                     direction="forward", flags=_fftwflags)
-        #fftfield = np.zeros(Field.shape, dtype=np.complex)
-        #fftplan.guru_execute_dft(Field, fftfield)
-        #fftw.destroy_plan(fftplan)
-
-        return propfunc(fftfield, d, nm, res)
+        raise ValueError("No such metric: {}".format(metric))
+    
+    field, d, grad = minimize_metric(field, metric_func, nm, res, ival
+                                     roi=roi)
+    
+    ret_list = [field]
+    if ret_d:
+        ret_list += [d]
+    if ret_grad:
+        ret_list += [grad]
+    
+    if len(ret_list) == 1:
+        return ret_list[0]
     else:
-        if norm == "average gradient":
-            norm = lambda x: metrics.average_gradient(np.abs(x))
-        elif norm == "rms contrast":
-            norm = lambda x: -metrics.contrast_rms(np.angle(x))
-        elif norm == "spectrum":
-            norm = lambda x: metrics.spectral(np.abs(x),res)
-        else:
-            raise ValueError("No such norm: {}".format(norm))
-        
-        return minimize_metric(Field, norm, ival, nm, res, roi=roi,
-                                 return_gradient=True)
+        return tuple(ret_list)
 
 
-def autofocus_sinogram(sino, nm, res, ival=(None,None),
-                    norm="average gradient", d=None, ret_dopt=True,
-                    same_dist=False):
-    """ Perform numerical autofocusing
+
+def autofocus_stack(fieldstack, nm, res, ival, roi,
+                    metric="average gradient",
+                    same_dist=False, ret_ds=False, ret_grads=False,
+                    num_cpus=_cpu_count, copy=True):
+    """ Numerical autofocusing of a stack using the Helmholtz equation.
+    
     
     Parameters
     ----------
-    sino : 2d or 3d ndarray
+    fieldstack : 2d or 3d ndarray
         Electric field is BG-Corrected, i.e. Field = EX/BEx
     nm : float
         Refractive index of medeium.
@@ -96,69 +100,88 @@ def autofocus_sinogram(sino, nm, res, ival=(None,None),
         Size of wavelength in pixels.
     ival : tuple of floats
         Approximate interval to search for optimal focus in px.
-    d : None or float
-        No autofocusing. Refocus to focus position `d`.
-    norm : str
+    metric : str
         see `autofocus_field`.
     ret_dopt : bool
         Return optimized distance and gradient plotting data.
     same_dist : bool
         Refocus entire sinogram with one distance.
+    red_ds : bool
+        Return the autofocusing distances in pixels. Defaults to False.
+    red_grads : bool
+        Return the computed gradients as a list.
+    copy : bool
+        If False, overwrites input array.
     
+
     Returns
     -------
     The focused field (and the refocussing distance + data if d is None)
     """
     dopt = list()
     grad = list()
-    newsino = np.zeros(sino.shape, dtype=np.complex)
-
-    for s in range(len(sino)):
-        if d is not None:
-            field = autofocus_field(sino[s], nm, res, ival, norm, d=d)
-        else:
-            field, do, gr = autofocus_field(sino[s], nm=nm, res=res,
-                                            ival=ival, norm=norm)
-            dopt.append(do)
-            grad.append(gr)
-        newsino[s] = field
-
+    
+    M = fieldstack.shape[0]
+    
+    # setup arguments
+    stackargs = list()
+    for s in range(M):
+        stackargs.append([fieldstack[s], nm, res, ival, roi, metric,
+                          True, True, 1])
+    # perform first pass
+    p = mp.Pool(num_cpus)
+    result = p.map_async(autofocus_field, stackargs).get()
+    p.close()
+    p.terminate()
+    p.join()
+    
+    newstack = np.zeros(fieldstack.shape, dtype=fieldstack.dtype)
+        
+    for s in range(M):    
+        field, ds, gs = result[s]
+        dopt.append(ds)
+        grad.append(gs)
+        newstack[s] = field
+    
+    # perform second pass if `same_dist` is True
     if same_dist and d is None:
         # find average dopt
         davg = np.average(dopt)
-        dopt = [davg]*len(dopt)
-        for s in range(len(sino)):
-            newsino[s] = autofocus_field(sino[s], nm, res, ival, norm, d=davg)
 
-    if len(dopt) == 0:
-        return newsino
+        newstack = refocus_stack(fieldstack, davg, nm, res,
+                                 num_cpus=num_cpus, copy=copy)
+
+    ret_list = [newstack]
+    if ret_ds:
+        ret_list += [dopt]
+    if ret_grads:
+        ret_list += [grad]
+    
+    if len(ret_list) == 1:
+        return ret_list[0]
     else:
-        if ret_dopt:
-            return newsino, dopt, grad
-        else:
-            return newsino
+        return tuple(ret_list)
 
 
-
-def minimize_metric(field, norm, ival, nm, lambd, roi=None,
+def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
                        coarse_acc=1, fine_acc=.005,
-                       return_gradient=False):
-    """ Find the focus by minimizing the `norm` of an image
+                       return_gradient=True):
+    """ Find the focus by minimizing the `metric` of an image
     
     Parameters
     ----------
     field : 2d array
         electric field
-    norm : callable
-        some norm to be minimized
+    metric_func : callable
+        some metric to be minimized
     ival : tuple of floats
         (minimum, maximum) of interval to search in pixels
     nm : float
         RI of medium
     lambd : float
         wavelength in pixels
-    roi : rectangular region of interest (x1,y1,x2,y2)
-        Region of interest of `field` for which the norm will be
+    roi : rectangular region of interest (x1, y1, x2, y2)
+        Region of interest of `field` for which the metric will be
         minimized. If not given, the entire `field` will be used.
     coarse_acc : float
         accuracy for determination of global minimum in pixels
@@ -204,9 +227,9 @@ def minimize_metric(field, norm, ival, nm, lambd, roi=None,
         #fsp = propfunc(fftfield, d, nm, lambd, fftplan=fftplan)
         fsp = propfunc(fftfield, d, nm, lambd)
         if Fshape == 2:
-            gradc[i] = norm(fsp[roi[0]:roi[2], roi[1]:roi[3]])
+            gradc[i] = metric(fsp[roi[0]:roi[2], roi[1]:roi[3]])
         else:
-            gradc[i] = norm(fsp[roi[0]:roi[1]])
+            gradc[i] = metric(fsp[roi[0]:roi[1]])
     
     minid = np.argmin(gradc)
     if minid == 0:
@@ -230,9 +253,9 @@ def minimize_metric(field, norm, ival, nm, lambd, roi=None,
             #fsp = propfunc(fftfield, d, nm, lambd, fftplan=fftplan)
             fsp = propfunc(fftfield, d, nm, lambd)
             if Fshape == 2:
-                gradf[i] = norm(fsp[roi[0]:roi[2], roi[1]:roi[3]])
+                gradf[i] = metric(fsp[roi[0]:roi[2], roi[1]:roi[3]])
             else:
-                gradf[i] = norm(fsp[roi[0]:roi[1]])
+                gradf[i] = metric(fsp[roi[0]:roi[1]])
         minid = np.argmin(gradf)
         if minid == 0:
             zf -= zf[1]-zf[0]

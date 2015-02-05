@@ -2,35 +2,44 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
 
+import multiprocessing as mp
 import numpy as np
 
-__all__ = ["refocus", "fft_propagate"]
+
+__all__ = ["fft_propagate", "refocus", "refocus_stack"]
+
+
+_cpu_count = mp.cpu_count()
 
 
 
-def refocus(field, distance, nm, res, method="helmholtz"):
-    """ Propagate a 1D or 2D field a certain distance in pixels
+def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
+    """ Refocus a 1D or 2D field
+    
     
     Parameters
     ----------
-    fftfield : 1d array
-        Fourier transform of 1D Electric field component
-    distance : float
-        distance to be propagated in pixels (negative for backwards)
+    field : 1d or 2d array
+        1D or 2D background corrected electric field (Ex/BEx)
+    d : float
+        Distance to be propagated in pixels (negative for backwards)
     nm : float
-        refractive index of medium
+        Refractive index of medium
     res : float
-        wavelenth in pixels
+        Wavelenth in pixels
     method : str
-        defines the method of propagation;
+        Defines the method of propagation;
         one of {
                 "helmholtz" : the optical transfer function `exp(ikd)`,
                 "fresnel"   : paraxial approximation `exp(ik²λd)`
                }
+    num_cpus : int
+        Not implemented. Only one CPU is used.
+    
         
     Returns
     -------
-    Electric field at that distance
+    Electric field at `d`.
     """
     # FFT of field
     fshape = len(field.shape)
@@ -51,16 +60,98 @@ def refocus(field, distance, nm, res, method="helmholtz"):
     return func(**vardict)
 
 
+def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
+                  num_cpus=_cpu_count, copy=True):
+    """ Refocus a stack of 1D or 2D fields
+    
+    
+    Parameters
+    ----------
+    fieldstack : 2d or 3d array
+        Stack of 1D or 2D background corrected electric fields (Ex/BEx).
+        The first axis iterates through the individual fields.
+    d : float
+        Distance to be propagated in pixels (negative for backwards)
+    nm : float
+        Refractive index of medium
+    res : float
+        Wavelenth in pixels
+    method : str
+        Defines the method of propagation;
+        one of {
+                "helmholtz" : the optical transfer function `exp(ikd)`,
+                "fresnel"   : paraxial approximation `exp(ik²λd)`
+               }
+    num_cpus : str
+        Defines the number of CPUs to be used for refocusing.
+    copy : bool
+        If False, overwrites input stack.
+        
+        
+    Returns
+    -------
+    Electric field stack at `d`.
+    """
+    
+    func = refocus
+    names = func.__code__.co_varnames[:func.__code__.co_argcount]
+    
+    loc = locals()
+    vardict = dict()
 
-def fft_propagate(fftfield, distance, nm, res, method="helmholtz",
+    for name in names:
+        if loc.has_key(name):
+            vardict[name] = loc[name]
+    
+    # child processes should only use one cpu
+    vardict["num_cpus"] = 1
+    
+    M = fieldstack.shape[0]
+    stackargs = list()
+
+    # Create individual arglists for all fields
+    for m in range(M):
+        kwarg = vardict.copy()
+        kwarg["field"] = fieldstack[m]
+        # now we turn the kwarg into an arglist
+        args = list()
+        for i, a in enumerate(names[::-1]):
+            # first set default
+            if i < len(func_def):
+                val = func_def[i]
+            if a in kwarg:
+                val = kwarg[a]
+            args.append(val)
+        stackargs.append(args[::-1])
+
+
+    p = mp.Pool(num_cpus)
+    result = p.map_async(refocus, stackargs).get()
+    p.close()
+    p.terminate()
+    p.join()    
+
+    if copy:
+        data = np.zeros([M]+result[0].shape, dtype=result[0].dtype)
+    else:
+        data = fieldstack
+        
+    for m in range(M):
+        data[m] = result[m]
+
+    return data
+    
+
+def fft_propagate(fftfield, d, nm, res, method="helmholtz",
                   ret_fft=False):
     """ Propagates a 1D or 2D Fourier transformed field
+    
     
     Parameters
     ----------
     fftfield : 1-dimensional or 2-dimensional ndarray
         Fourier transform of 1D Electric field component
-    distance : float
+    d : float
         Distance to be propagated in pixels (negative for backwards)
     nm : float
         Refractive index of medium
@@ -79,7 +170,7 @@ def fft_propagate(fftfield, distance, nm, res, method="helmholtz",
                 
     Returns
     -------
-    Electric field at that distance. If `ret_fft` is True, then the
+    Electric field at `d`. If `ret_fft` is True, then the
     Fourier transform of the electric field will be returned (faster).
     """
     fshape = len(fftfield.shape)
@@ -101,15 +192,16 @@ def fft_propagate(fftfield, distance, nm, res, method="helmholtz",
 
 
 
-def fft_propagate_2d(fftfield, distance, nm, res, method="helmholtz",
+def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
                      ret_fft=False):
     """ Propagate a 1D  Fourier transformed field in 2D
+    
     
     Parameters
     ----------
     fftfield : 1d array
         Fourier transform of 1D Electric field component
-    distance : float
+    d : float
         Distance to be propagated in pixels (negative for backwards)
     nm : float
         Refractive index of medium
@@ -128,11 +220,11 @@ def fft_propagate_2d(fftfield, distance, nm, res, method="helmholtz",
                 
     Returns
     -------
-    Electric field at that distance. If `ret_fft` is True, then the
+    Electric field at `d`. If `ret_fft` is True, then the
     Fourier transform of the electric field will be returned (faster).
     """
     assert len(fftfield.shape)==1, "Dimension of `fftfield` must be 1."
-    l0 = distance
+    l0 = d
     km = (2*np.pi*nm)/res
     kx = np.fft.fftfreq(len(fftfield))*2*np.pi
     # free space propagator is
@@ -158,15 +250,16 @@ def fft_propagate_2d(fftfield, distance, nm, res, method="helmholtz",
 
 
 
-def fft_propagate_3d(fftfield, distance, nm, res, method="helmholtz",
+def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
                      ret_fft=False):
     """ Propagate a 2D  Fourier transformed field in 3D
+    
     
     Parameters
     ----------
     fftfield : 2d array
         Fourier transform of 2D Electric field component
-    distance : float
+    d : float
         Distance to be propagated in pixels (negative for backwards)
     nm : float
         Refractive index of medium
@@ -185,7 +278,7 @@ def fft_propagate_3d(fftfield, distance, nm, res, method="helmholtz",
                
     Returns
     -------
-    Electric field at that distance. If `ret_fft` is True, then the
+    Electric field at `d`. If `ret_fft` is True, then the
     Fourier transform of the electric field will be returned (faster).
     """
     assert len(fftfield.shape)==1, "Dimension of `fftfield` must be 1."
@@ -193,7 +286,7 @@ def fft_propagate_3d(fftfield, distance, nm, res, method="helmholtz",
     #    raise NotImplementedError("Field must be square shaped.")
     # free space propagator is
     # exp(i*sqrt(km**2-kx**2-ky**2)*l0)
-    l0 = distance
+    l0 = d
     km = (2*np.pi*nm)/res
     kx = (np.fft.fftfreq(fftfield.shape[0])*2*np.pi).reshape(-1,1)
     ky = (np.fft.fftfreq(fftfield.shape[1])*2*np.pi).reshape(1,-1)

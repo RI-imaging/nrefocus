@@ -136,7 +136,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     p.join()
     
     newstack = np.zeros(fieldstack.shape, dtype=fieldstack.dtype)
-        
+
     for s in range(M):    
         field, ds, gs = result[s]
         dopt.append(ds)
@@ -165,7 +165,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
 
 def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
                        coarse_acc=1, fine_acc=.005,
-                       return_gradient=True):
+                       return_gradient=True, padding=True):
     """ Find the focus by minimizing the `metric` of an image
     
     Parameters
@@ -193,14 +193,25 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
     if roi is not None:
         assert len(roi) == len(field.shape)*2, "ROI must match field dimension"
     
-    Fshape = len(field.shape)
+    initshape = field.shape
+    Fshape = len(initshape)
     propfunc = fft_propagate
     
     if roi is None:
         if Fshape == 2:
-            roi = (0,0,field.shape[0], field.shape[1])
+            roi = (0, 0, field.shape[0], field.shape[1])
         else:
-            roi = (0,field.shape[0])
+            roi = (0, field.shape[0])
+    
+    if padding:
+        if Fshape == 2:
+            field = np.pad(field, 
+                           ((0,initshape[0]), (0,initshape[1])),
+                           mode="mean", stat_length=10)
+        else:
+            field = np.pad(field, 
+                           (0,initshape[0]),
+                           mode="mean", stat_length=10)
     
     if ival[0] > ival[1]:
         ival = (ival[1], ival[0])
@@ -263,6 +274,12 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
             break
 
     minid = np.argmin(gradf)
+
+    if padding:
+        if Fshape == 2:
+            fsp = fsp[:initshape[0],:initshape[1]]
+        else:
+            fsp = fsp[:initshape[0]]
 
     if return_gradient:
         return fsp, zf[minid], [(zc, gradc), (zf,gradf)]

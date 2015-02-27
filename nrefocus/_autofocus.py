@@ -166,7 +166,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         return tuple(ret_list)
 
 
-def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
+def minimize_metric(field, metric_func, nm, res, ival, roi=None,
                        coarse_acc=1, fine_acc=.005,
                        return_gradient=True, padding=True):
     """ Find the focus by minimizing the `metric` of an image
@@ -181,7 +181,7 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
         (minimum, maximum) of interval to search in pixels
     nm : float
         RI of medium
-    lambd : float
+    res : float
         wavelength in pixels
     roi : rectangular region of interest (x1, y1, x2, y2)
         Region of interest of `field` for which the metric will be
@@ -233,8 +233,8 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
     gradc = np.zeros(zc.shape)
     for i in range(len(zc)):
         d = zc[i]
-        #fsp = propfunc(fftfield, d, nm, lambd, fftplan=fftplan)
-        fsp = propfunc(fftfield, d, nm, lambd)
+        #fsp = propfunc(fftfield, d, nm, res, fftplan=fftplan)
+        fsp = propfunc(fftfield, d, nm, res)
         if Fshape == 2:
             gradc[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
         else:
@@ -252,15 +252,14 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
     numfine = 10
     mingrad = gradc[minid]
 
-
     while True:
 
         gradf = np.zeros(numfine)
         zf = np.linspace(ival[0],ival[1],numfine)
         for i in range(len(zf)):
             d = zf[i]
-            #fsp = propfunc(fftfield, d, nm, lambd, fftplan=fftplan)
-            fsp = propfunc(fftfield, d, nm, lambd)
+            #fsp = propfunc(fftfield, d, nm, res, fftplan=fftplan)
+            fsp = propfunc(fftfield, d, nm, res)
             if Fshape == 2:
                 gradf[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
             else:
@@ -277,6 +276,8 @@ def minimize_metric(field, metric_func, nm, lambd, ival, roi=None,
             break
 
     minid = np.argmin(gradf)
+
+    
 
     if padding:
         if Fshape == 2:

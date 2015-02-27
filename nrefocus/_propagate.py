@@ -310,7 +310,7 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
     if ret_fft:
         return fftfield*fstemp
     else:
-        return np.fft.ifft(fftfield*fstemp)
+        return np.fft.ifft2(fftfield*fstemp)
 
 
 def _refocus_wrapper(args):

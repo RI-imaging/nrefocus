@@ -55,7 +55,7 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
         if loc.has_key(name):
             vardict[name] = loc[name]
 
-    vardict["fftfield"] = np.fft.fft(field)
+    vardict["fftfield"] = np.fft.fftn(field)
     
     return func(**vardict)
 

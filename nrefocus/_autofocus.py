@@ -134,6 +134,9 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     p.close()
     p.terminate()
     p.join()
+    #result = list()
+    #for arg in stackargs:
+    #    result += _autofocus_wrapper(arg)
     
     newstack = np.zeros(fieldstack.shape, dtype=fieldstack.dtype)
 

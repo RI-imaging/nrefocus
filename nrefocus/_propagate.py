@@ -189,7 +189,7 @@ def fft_propagate(fftfield, d, nm, res, method="helmholtz",
     vardict = dict()
     for name in names:
         vardict[name] = loc[name]
-    
+
     return func(**vardict)
 
 
@@ -283,7 +283,7 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
     Electric field at `d`. If `ret_fft` is True, then the
     Fourier transform of the electric field will be returned (faster).
     """
-    assert len(fftfield.shape)==1, "Dimension of `fftfield` must be 1."
+    assert len(fftfield.shape)==2, "Dimension of `fftfield` must be 2."
     #if fftfield.shape[0] != fftfield.shape[1]:
     #    raise NotImplementedError("Field must be square shaped.")
     # free space propagator is

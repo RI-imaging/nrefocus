@@ -11,7 +11,7 @@ from warnings import warn
 author = u"Paul Müller"
 authors = [author]
 name = 'nrefocus'
-description = 'Python library for numerical (auto)refocusing of complex wave fields'
+description = 'library for numerical focusing (refocusing, autofocusing) of complex wave fields'
 year = "2015"
 
 
@@ -35,15 +35,6 @@ class PyTest(Command):
         import sys,subprocess
         errno = subprocess.call([sys.executable, 'tests/runtests.py'])
         raise SystemExit(errno)
-
-try:
-    import sys
-    import os
-    sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/"+name)
-    # get version number
-    from _nr_version import __version__ as version
-except:
-    version = "unknown"
 
 
 if __name__ == "__main__":

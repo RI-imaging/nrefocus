@@ -48,9 +48,9 @@ if __name__ == "__main__":
         license="BSD (3 clause)",
         description=description,
         long_description="""This module provides the means to numerically
-    refocus complex wave fields, such as those acquired using quantitative 
-    phase measuring techniques in modern microscopy. The module also comes
-    with a couple of autofocusing metrics.
+refocus complex wave fields, such as those acquired using quantitative 
+phase measuring techniques in modern microscopy. The module also comes
+with a couple of autofocusing metrics.
     """,
         install_requires=["NumPy>=1.5.1"],
     #    tests_require=["psutil"],

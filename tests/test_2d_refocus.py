@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Tests 1D refocusing
+""" Tests 2D refocusing
 """
 from __future__ import division, print_function
 
@@ -18,13 +18,13 @@ sys.path = [split(DIR)[0]] + sys.path
 import nrefocus
 
 
-def test_1d_refocus1():
+def test_2d_refocus1():
     myname = sys._getframe().f_code.co_name
     print("running ", myname)
-    rfield = nrefocus.refocus(field=np.arange(200),
-                              d = 42.13,
-                              nm = 1.333,
-                              res = 3.25,
+    rfield = nrefocus.refocus(field=np.arange(256).reshape(16,16),
+                              d = 2.13,
+                              nm = 1.533,
+                              res = 8.25,
                               method = "helmholtz")
     assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
     

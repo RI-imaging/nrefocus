@@ -10,8 +10,8 @@ from warnings import warn
 
 author = u"Paul Müller"
 authors = [author]
-name = 'nrefocus'
 description = 'library for numerical focusing (refocusing, autofocusing) of complex wave fields'
+name = 'nrefocus'
 year = "2015"
 
 
@@ -20,7 +20,6 @@ try:
     from _version import version
 except:
     version = "unknown"
-
 
 
 class PyTest(Command):
@@ -42,6 +41,7 @@ if __name__ == "__main__":
         name=name,
         author=author,
         url='https://github.com/paulmueller/nrefocus',
+        author_email='paul.mueller@biotec.tu-dresden.de',
         version=version,
         packages=[name],
         package_dir={name: name},

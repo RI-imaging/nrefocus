@@ -3,14 +3,14 @@
 """ Numerical focusing of electric fields.
 """
 
-#try:
+# try:
 #    import fftw3
-#except ImportError:
+# except ImportError:
 #    raise ImportError("`fftw3` not found. Please install `python-fftw`")
-## Number of cores to use for multiprocessing tasks
+# Number of cores to use for multiprocessing tasks
 #import multiprocessing as mp
 #_ncores = mp.cpu_count()
-## Flags for fftw3
+# Flags for fftw3
 #_fftwflags = ["estimate"]
 
 

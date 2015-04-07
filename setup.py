@@ -4,6 +4,7 @@
 # python setup.py sdist
 from setuptools import setup, find_packages, Command
 from os.path import join, dirname, realpath
+import subprocess as sp
 import sys
 from warnings import warn
 
@@ -20,6 +21,21 @@ try:
     from _version import version
 except:
     version = "unknown"
+
+
+class PyDocGitHub(Command):
+    """ Upload the docs to GitHub gh-pages branch
+    """
+    user_options = []
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        errno = sp.call([sys.executable, 'doc/commit_gh-pages.py'])
+        raise SystemExit(errno)
 
 
 class PyTest(Command):
@@ -64,6 +80,8 @@ with a couple of autofocusing metrics.
             'Intended Audience :: Science/Research'
                      ],
         platforms=['ALL'],
-        cmdclass = {'test': PyTest},
+        cmdclass = {'test': PyTest,
+                    'commit_doc': PyDocGitHub,
+                    }
         )
 

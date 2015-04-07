@@ -28,10 +28,11 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
         Wavelenth in pixels
     method : str
         Defines the method of propagation;
-        one of {
-                "helmholtz" : the optical transfer function `exp(ikd)`,
-                "fresnel"   : paraxial approximation `exp(ik²λd)`
-               }
+        one of 
+        
+            - "helmholtz" : the optical transfer function `exp(ikd)`,
+            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+
     num_cpus : int
         Not implemented. Only one CPU is used.
 
@@ -77,10 +78,11 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
         Wavelenth in pixels
     method : str
         Defines the method of propagation;
-        one of {
-                "helmholtz" : the optical transfer function `exp(ikd)`,
-                "fresnel"   : paraxial approximation `exp(ik²λd)`
-               }
+        one of
+
+            - "helmholtz" : the optical transfer function `exp(ikd)`,
+            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+
     num_cpus : str
         Defines the number of CPUs to be used for refocusing.
     copy : bool
@@ -158,10 +160,11 @@ def fft_propagate(fftfield, d, nm, res, method="helmholtz",
         Wavelength in pixels
     method : str
         Defines the method of propagation;
-        one of {
-                "helmholtz" : the optical transfer function `exp(ikd)`,
-                "fresnel"   : paraxial approximation `exp(ik²λd)`
-               }
+        one of 
+
+            - "helmholtz" : the optical transfer function `exp(ikd)`,
+            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
         in Fourier space.
@@ -207,10 +210,11 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
         Wavelength in pixels
     method : str
         Defines the method of propagation;
-        one of {
-                "helmholtz" : the optical transfer function `exp(ikd)`,
-                "fresnel"   : paraxial approximation `exp(ik²λd)`
-               }
+        one of
+
+            - "helmholtz" : the optical transfer function `exp(ikd)`,
+            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
         in Fourier space.
@@ -264,10 +268,11 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
         Wavelength in pixels
     method : str
         Defines the method of propagation;
-        one of {
-                "helmholtz" : the optical transfer function `exp(ikd)`,
-                "fresnel"   : paraxial approximation `exp(ik²λd)`
-               }
+        one of
+
+            - "helmholtz" : the optical transfer function `exp(ikd)`,
+            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
         in Fourier space.

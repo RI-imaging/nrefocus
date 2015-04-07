@@ -3,7 +3,7 @@ python library for numerical (auto)refocusing of complex wave fields
 
 
 #### Documentation
-The documentation is available [here](paulmueller.github.io/nrefocus/).
+The documentation is available [here](http://paulmueller.github.io/nrefocus/).
 
 #### installation
 Install from the Python package index

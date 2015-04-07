@@ -3,13 +3,14 @@ nrefocus reference
 .. toctree::
    :maxdepth: 2
 
-
 .. automodule:: nrefocus
 
 For a quick overview, see :ref:`genindex`.
 
-Refocusing of 1D/2D images
-::::::::::::::::::::::::::
+Fork `nrefocus on GitHub <https://github.com/paulmueller/nrefocus/>`_.
+
+Refocus 1D/2D fields
+::::::::::::::::::::
 .. automodule:: nrefocus._propagate
 .. currentmodule:: nrefocus
 .. autosummary:: 
@@ -21,17 +22,17 @@ Fourier-domain propagation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: fft_propagate
 
-Refocusing of single images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Refocus individual fields
+~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: refocus
 
-Refocusing of image stacks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Refocus field stacks
+~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: refocus_stack
 
 
-Autofocusing of 1D/2D images
-::::::::::::::::::::::::::::
+Autofocus 1D/2D fields
+::::::::::::::::::::::
 .. automodule:: nrefocus._autofocus
 .. currentmodule:: nrefocus
 .. autosummary:: 
@@ -45,12 +46,12 @@ Metrics
 
 .. currentmodule:: nrefocus
 
-Autofocusing of single images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Autofocus single fields
+~~~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: autofocus
 
-Autofocusing of image stacks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Autofocus field stacks
+~~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: autofocus_stack
 
 

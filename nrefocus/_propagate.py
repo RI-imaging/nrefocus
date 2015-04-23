@@ -52,7 +52,7 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
     vardict = dict()
 
     for name in names:
-        if loc.has_key(name):
+        if name in loc:
             vardict[name] = loc[name]
 
     vardict["fftfield"] = np.fft.fftn(field)

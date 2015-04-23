@@ -1,5 +1,5 @@
 ## nrefocus
-![alt text](http://img.shields.io/pypi/v/nrefocus.png)
+[![PyPI](http://img.shields.io/pypi/v/nrefocus.png)](https://pypi.python.org/pypi/nrefocus)
 
 python library for numerical (auto)refocusing of complex wave fields
 

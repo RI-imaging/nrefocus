@@ -1,4 +1,6 @@
 ## nrefocus
+![alt text][http://img.shields.io/pypi/v/nrefocus.png]
+
 .. image:: http://img.shields.io/pypi/v/nrefocus.png
    :target: https://pypi.python.org/pypi/nrefocus
    

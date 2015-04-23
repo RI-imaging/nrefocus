@@ -1,11 +1,15 @@
 ## nrefocus
+.. image:: http://img.shields.io/pypi/v/nrefocus.png
+   :target: https://pypi.python.org/pypi/nrefocus
+   
 python library for numerical (auto)refocusing of complex wave fields
 
 
 #### Documentation
 The documentation is available [here](http://paulmueller.github.io/nrefocus/).
 
-#### installation
+
+#### Installation
 Install from the Python package index
 
     pip install nrefocus
@@ -14,11 +18,14 @@ or download the package and run
 
     python setup.py install
 
-#### pytest
+
+#### Testing
 Some functionalities of the module are tested with
 
     python setup.py test
-    
 
-#### documentation
-Ther currently is none, but the module is not voluminous and all functions have extensive docstrings.
+
+#### Financial support
+This project has received funding from the European Union’s Seventh
+Framework Programme for research, technological development and
+demonstration under grant agreement no 282060.

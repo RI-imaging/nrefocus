@@ -3,6 +3,9 @@ nrefocus reference
 .. toctree::
    :maxdepth: 2
 
+General
+:::::::
+
 .. automodule:: nrefocus
 
 For a quick overview, see :ref:`genindex`.

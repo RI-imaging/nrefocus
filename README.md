@@ -1,6 +1,6 @@
 ## nrefocus
-[![PyPI](http://img.shields.io/pypi/v/nrefocus.png)](https://pypi.python.org/pypi/nrefocus)
-[![Travis](http://img.shields.io/travis/paulmueller/nrefocus.png)](https://travis-ci.org/paulmueller/nrefocus)
+[![PyPI](http://img.shields.io/pypi/v/nrefocus.svg)](https://pypi.python.org/pypi/nrefocus)
+[![Travis](http://img.shields.io/travis/paulmueller/nrefocus.svg)](https://travis-ci.org/paulmueller/nrefocus)
 
 
 python library for numerical (auto)refocusing of complex wave fields

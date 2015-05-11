@@ -11,8 +11,9 @@ install:
 - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then sudo apt-get install python-numpy; fi
 - if [[ $TRAVIS_PYTHON_VERSION == "3.4" ]]; then sudo apt-get install python3-numpy; fi
 - travis_retry python setup.py develop
-- python --version
 - pip freeze
 script:
-- travis_wait python setup.py test
-cache: apt
+  - coverage run --source=nrefocus tests/runtests.py
+  - coverage report -m
+after_success:
+  coveralls --verbose

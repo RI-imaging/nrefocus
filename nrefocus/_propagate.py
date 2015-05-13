@@ -100,7 +100,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     loc = locals()
     vardict = dict()
     for name in names:
-        if loc.has_key(name):
+        if name in loc.keys():
             vardict[name] = loc[name]
     # default keyword arguments
     func_def = func.__defaults__[::-1]

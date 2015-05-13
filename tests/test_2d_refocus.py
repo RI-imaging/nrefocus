@@ -27,6 +27,19 @@ def test_2d_refocus1():
                               res = 8.25,
                               method = "helmholtz")
     assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
+
+
+def test_2d_refocus_stack():
+    myname = sys._getframe().f_code.co_name
+    print("running ", myname)
+    size = 10
+    stack = np.arange(size**3).reshape(size, size, size)
+    rfield = nrefocus.refocus_stack(fieldstack=stack,
+                                    d = 2.13,
+                                    nm = 1.533,
+                                    res = 8.25,
+                                    method = "helmholtz")
+    assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
     
     
 # Get results
@@ -34,6 +47,7 @@ results = dict()
 datadir = join(DIR, "data")
 for f in os.listdir(datadir):
     #np.savetxt('outfile.txt', np.array(r).flatten().view(float))
+    #np.savetxt('outfile.txt', np.array(r).flatten().view(float), fmt="%.9f")
     glob = globals()
     if f.endswith(".txt") and f[:-4] in list(glob.keys()):
         results[f[:-4]] = np.loadtxt(join(datadir, f))

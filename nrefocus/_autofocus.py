@@ -21,7 +21,7 @@ _cpu_count = mp.cpu_count()
 
 
 def autofocus(field, nm, res, ival, roi=None,
-              metric="average gradient",
+              metric="average gradient", padding=True,
               ret_d=False, ret_grad=False, num_cpus=1):
     """ Numerical autofocusing of a field using the Helmholtz equation.
 
@@ -43,6 +43,8 @@ def autofocus(field, nm, res, ival, roi=None,
         - "average gradient" : average gradient metric of amplitude
         - "rms contrast" : RMS contrast of phase data
         - "spectrum" : sum of filtered Fourier coefficients
+    padding: bool
+        Perform zero padding before Fourier transform.
     red_d : bool
         Return the autofocusing distance in pixels. Defaults to False.
     red_grad : bool
@@ -67,7 +69,7 @@ def autofocus(field, nm, res, ival, roi=None,
         raise ValueError("No such metric: {}".format(metric))
 
     field, d, grad = minimize_metric(field, metric_func, nm, res, ival,
-                                     roi=roi)
+                                     roi=roi, padding=padding)
 
     ret_list = [field]
     if ret_d:
@@ -82,7 +84,7 @@ def autofocus(field, nm, res, ival, roi=None,
 
 
 def autofocus_stack(fieldstack, nm, res, ival, roi=None,
-                    metric="average gradient",
+                    metric="average gradient", padding=True,
                     same_dist=False, ret_ds=False, ret_grads=False,
                     num_cpus=_cpu_count, copy=True):
     """ Numerical autofocusing of a stack using the Helmholtz equation.
@@ -100,12 +102,17 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         Approximate interval to search for optimal focus in px.
     metric : str
         see `autofocus_field`.
+    padding : bool
+        Perform padding before Fourier transform.
     ret_dopt : bool
         Return optimized distance and gradient plotting data.
     same_dist : bool
         Refocus entire sinogram with one distance.
     red_ds : bool
         Return the autofocusing distances in pixels. Defaults to False.
+        If sam_dist is True, still returns autofocusing distances
+        of first pass. The used refocusing distance is the
+        average.
     red_grads : bool
         Return the computed gradients as a list.
     copy : bool
@@ -124,8 +131,8 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     # setup arguments
     stackargs = list()
     for s in range(M):
-        stackargs.append([fieldstack[s], nm, res, ival, roi, metric,
-                          True, True, 1])
+        stackargs.append([fieldstack[s].copy(copy), nm, res, ival,
+                          roi, metric, padding, True, True, 1])
     # perform first pass
     p = mp.Pool(num_cpus)
     result = p.map_async(_autofocus_wrapper, stackargs).get()
@@ -149,8 +156,30 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         # find average dopt
         davg = np.average(dopt)
 
+        if padding:
+            initshape = fieldstack[0].shape
+            Fshape = len(initshape)
+            
+            if Fshape == 2:
+                fieldstack = np.pad(fieldstack,
+                                    ((0, 0),
+                                     (0, initshape[0]),
+                                     (0, initshape[1])),
+                                    mode="mean", stat_length=10)
+            else:
+                fieldstack = np.pad(fieldstack,
+                                    ((0,0),
+                                     (0, initshape[0])),
+                                    mode="mean", stat_length=10)
+
         newstack = refocus_stack(fieldstack, davg, nm, res,
                                  num_cpus=num_cpus, copy=copy)
+
+        if padding:
+            if Fshape == 2:
+                newstack = newstack[:, :initshape[0], :initshape[1]]
+            else:
+                newstack = newstack[:, :initshape[0]]
 
     ret_list = [newstack]
     if ret_ds:

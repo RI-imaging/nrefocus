@@ -29,8 +29,8 @@ def test_2d_autofocus_helmholtz_average_gradient():
     method = "helmholtz"
     
     # first propagate the field
-    rfield = nrefocus.refocus(field = field,
-                              d = d,
+    rfield = nrefocus.refocus(field=field,
+                              d=d,
                               nm = nm,
                               res = res,
                               method = method)
@@ -42,12 +42,49 @@ def test_2d_autofocus_helmholtz_average_gradient():
             ival=(-1.5*d, -0.5*d),
             roi=None,
             metric="average gradient",
+            padding=True,
             ret_d=True,
             ret_grad=False,
-            num_cpus=1)
-    print("correct / expected / refocused distances:", -1*d, -3.08922558923, dnew)
+            num_cpus=1,
+            )
+    print("  correct / expected / refocused distances:", -1*d, -3.08922558923, dnew)
     assert np.allclose(0, np.angle(nfield/rfield), atol=.047)
     assert np.allclose(1, np.abs(nfield/rfield), atol=.081)
+
+
+def test_2d_autofocus_helmholtz_average_gradient_zero():
+    myname = sys._getframe().f_code.co_name
+    print("running ", myname)
+    field=1*np.exp(1j*np.linspace(.1,.5, 256)).reshape(16,16)
+    d = 0
+    nm = 1.533
+    res = 8.25
+    method = "helmholtz"
+    
+    # first propagate the field
+    rfield = nrefocus.refocus(field = field,
+                              d = d,
+                              nm=nm,
+                              res=res,
+                              method=method,
+                              )
+    # then try to refocus it
+    nfield, dnew = nrefocus.autofocus(
+            field=rfield,
+            nm=nm,
+            res=res,
+            ival=(-1.5*d, -0.5*d),
+            roi=None,
+            metric="average gradient",
+            padding=False, # without padding, result must be exact
+            ret_d=True,
+            ret_grad=False,
+            num_cpus=1,
+            )
+    print("  correct / expected / refocused distances:", 0, 0, dnew)
+    assert np.allclose( nfield.flatten().view(float),
+                        rfield.flatten().view(float))
+
 
 def test_2d_autofocus_fresnel_average_gradient():
     myname = sys._getframe().f_code.co_name
@@ -72,10 +109,11 @@ def test_2d_autofocus_fresnel_average_gradient():
             ival=(-1.5*d, -0.5*d),
             roi=None,
             metric="average gradient",
+            padding=True,
             ret_d=True,
             ret_grad=False,
             num_cpus=1)
-    print("correct / expected / refocused distances:", -1*d, -7.56172839506, dnew)
+    print("  correct / expected / refocused distances:", -1*d, -7.56172839506, dnew)
     assert np.allclose(0, np.angle(nfield/rfield), atol=.124)
     assert np.allclose(1, np.abs(nfield/rfield), atol=.15)
 
@@ -84,18 +122,105 @@ def test_2d_autofocus_fresnel_average_gradient():
 
 
 
-def test_2d_refocus_stack():
+def test_2d_autofocus_stack_same_dist_nopadding():
     myname = sys._getframe().f_code.co_name
     print("running ", myname)
+    d = 5.5
+    nm = 1.5133
+    res = 6.25
+    method = "helmholtz"
     size = 10
-    stack = np.arange(size**3).reshape(size, size, size)
+    metric = "average gradient"
+    stack = 1*np.exp(1j*np.linspace(.1,.5, size**3)).reshape(size,size,size)
     rfield = nrefocus.refocus_stack(fieldstack=stack,
-                                    d = 2.13,
-                                    nm = 1.533,
-                                    res = 8.25,
-                                    method = "helmholtz")
-    assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
+                                    d=d,
+                                    nm=nm,
+                                    res=res,
+                                    method=method)
+    nfield, dnew = nrefocus.autofocus_stack(
+            fieldstack=rfield,
+            nm=nm,
+            res=res,
+            ival=(-1.5*d, -0.5*d),
+            roi=None,
+            metric=metric,
+            padding=False,
+            same_dist=False,
+            ret_ds=True,
+            ret_grads=False,
+            num_cpus=1,
+            copy=True)
+
+    # reconstruction distance is same in above case
+    nfield_same, dnewsame = nrefocus.autofocus_stack(
+            fieldstack=rfield,
+            nm=nm,
+            res=res,
+            ival=(-1.5*d, -0.5*d),
+            roi=None,
+            metric=metric,
+            padding=False,
+            same_dist=True,
+            ret_ds=True,
+            ret_grads=False,
+            num_cpus=1,
+            copy=True)
+    assert np.allclose(nfield.flatten().view(float),
+                       nfield_same.flatten().view(float),
+                       atol=.000524)
+
+
+def test_2d_autofocus_stack_same_dist():
+    myname = sys._getframe().f_code.co_name
+    print("running ", myname)
+    d = 5.5
+    nm = 1.5133
+    res = 6.25
+    method = "helmholtz"
+    size = 10
+    metric = "average gradient"
+    stack = 1*np.exp(1j*np.linspace(.1,.5, size**3)).reshape(size,size,size)
+    rfield = nrefocus.refocus_stack(fieldstack=stack,
+                                    d=d,
+                                    nm=nm,
+                                    res=res,
+                                    method=method)
+    nfield, dnew = nrefocus.autofocus_stack(
+            fieldstack=rfield,
+            nm=nm,
+            res=res,
+            ival=(-1.5*d, -0.5*d),
+            roi=None,
+            metric=metric,
+            padding=True,
+            same_dist=False,
+            ret_ds=True,
+            ret_grads=False,
+            num_cpus=1,
+            copy=True)
+    assert np.allclose(np.array(rfield).flatten().view(float),
+                       np.array(nfield).flatten().view(float),
+                       atol=.013)
+
+    # reconstruction distance is same in above case
+    nfield_same = nrefocus.autofocus_stack(
+            fieldstack=rfield,
+            nm=nm,
+            res=res,
+            ival=(-1.5*d, -0.5*d),
+            roi=None,
+            metric=metric,
+            padding=True,
+            same_dist=True,
+            ret_ds=False,
+            ret_grads=False,
+            num_cpus=1,
+            copy=True)
     
+    assert np.allclose(nfield.flatten().view(float),
+                       nfield_same.flatten().view(float),
+                       atol=4.61e-5)
+
     
 # Get results
 results = dict()

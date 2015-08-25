@@ -3,14 +3,19 @@ nrefocus reference
 .. toctree::
    :maxdepth: 2
 
-General
-:::::::
+About
+:::::
 
 .. automodule:: nrefocus
 
 For a quick overview, see :ref:`genindex`.
 
 Fork `nrefocus on GitHub <https://github.com/paulmueller/nrefocus/>`_.
+
+
+Theory
+::::::
+.. include:: ./content_theory.txt
 
 Refocus 1D/2D fields
 ::::::::::::::::::::

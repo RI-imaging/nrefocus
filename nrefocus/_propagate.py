@@ -30,8 +30,8 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
         Defines the method of propagation;
         one of 
         
-            - "helmholtz" : the optical transfer function `exp(ikd)`,
-            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+            - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
+            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
     num_cpus : int
         Not implemented. Only one CPU is used.
@@ -80,8 +80,8 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
         Defines the method of propagation;
         one of
 
-            - "helmholtz" : the optical transfer function `exp(ikd)`,
-            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+            - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
+            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
     num_cpus : str
         Defines the number of CPUs to be used for refocusing.
@@ -162,8 +162,8 @@ def fft_propagate(fftfield, d, nm, res, method="helmholtz",
         Defines the method of propagation;
         one of 
 
-            - "helmholtz" : the optical transfer function `exp(ikd)`,
-            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+            - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
+            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
@@ -212,8 +212,8 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
         Defines the method of propagation;
         one of
 
-            - "helmholtz" : the optical transfer function `exp(ikd)`,
-            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+            - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
+            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
@@ -226,22 +226,23 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
     Fourier transform of the electric field will be returned (faster).
     """
     assert len(fftfield.shape) == 1, "Dimension of `fftfield` must be 1."
-    l0 = d
     km = (2 * np.pi * nm) / res
     kx = np.fft.fftfreq(len(fftfield)) * 2 * np.pi
+
     # free space propagator is
+    root_km = km**2 - kx**2
+    rt0 = (root_km > 0)
     if method == "helmholtz":
-        # exp(i*sqrt(km²-kx²)*l0)
+        # exp(i*sqrt(km²-kx²)*d)
         # Also subtract incoming plane wave. We are only considering
         # the scattered field here.
-        root_km = km**2 - kx**2
-        rt0 = (root_km > 0)
+
         # multiply by rt0 (filter in Fourier space)
-        fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * l0) * rt0
+        fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
-        # exp(i*lambda*kx²*PI*l0)
-        #fstemp = np.exp(1j * res * kx**2 * np.pi * l0)
-        fstemp = np.exp(-1j * res / nm * kx**2 * np.pi * l0 / (2 * np.pi)**2)
+        # exp(i*d*(km-kx²/(2*km))
+        #fstemp = np.exp(-1j * d * (kx**2/(2*km)))
+        fstemp = np.exp(1j * d * rt0 * (kx**2/(2*km)))
     else:
         raise ValueError("Unknown method: {}".format(method))
 
@@ -270,8 +271,8 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
         Defines the method of propagation;
         one of
 
-            - "helmholtz" : the optical transfer function `exp(ikd)`,
-            - "fresnel"   : paraxial approximation `exp(ik²λd)`
+            - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
+            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
@@ -287,22 +288,20 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
     # if fftfield.shape[0] != fftfield.shape[1]:
     #    raise NotImplementedError("Field must be square shaped.")
     # free space propagator is
-    # exp(i*sqrt(km**2-kx**2-ky**2)*l0)
-    l0 = d
+    # exp(i*sqrt(km**2-kx**2-ky**2)*d)
     km = (2 * np.pi * nm) / res
     kx = (np.fft.fftfreq(fftfield.shape[0]) * 2 * np.pi).reshape(-1, 1)
     ky = (np.fft.fftfreq(fftfield.shape[1]) * 2 * np.pi).reshape(1, -1)
     if method == "helmholtz":
-        # exp(i*sqrt(km²-kx²-ky²)*l0)
+        # exp(i*sqrt(km²-kx²-ky²)*d)
         root_km = km**2 - kx**2 - ky**2
         rt0 = (root_km > 0)
         # multiply by rt0 (filter in Fourier space)
-        fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * l0) * rt0
+        fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
-        # exp(i*lambda*(kx²+ky²)*PI*l0)
-        #fstemp = np.exp(1j * res * (kx**2+ky**2) * np.pi * l0)
-        fstemp = np.exp(-1j * res / nm * (kx**2 + ky**2)
-                        * np.pi * l0 / (2 * np.pi)**2)
+        # exp(i*d*(km-(kx²+ky²)/(2*km))
+        #fstemp = np.exp(-1j * d * (kx**2+ky**2)/(2*km))
+        fstemp = np.exp(-1j * d * (kx**2 + ky**2)/(2*km))
     else:
         raise ValueError("Unknown method: {}".format(method))
     #fstemp[np.where(np.isnan(fstemp))] = 0

@@ -22,22 +22,6 @@ try:
 except:
     version = "unknown"
 
-
-class PyDocGitHub(Command):
-    """ Upload the docs to GitHub gh-pages branch
-    """
-    user_options = []
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        errno = sp.call([sys.executable, 'doc/commit_gh-pages.py'])
-        raise SystemExit(errno)
-
-
 class PyTest(Command):
     user_options = []
     def initialize_options(self):
@@ -81,7 +65,6 @@ with a couple of autofocusing metrics.
                      ],
         platforms=['ALL'],
         cmdclass = {'test': PyTest,
-                    'commit_doc': PyDocGitHub,
                     }
         )
 

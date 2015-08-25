@@ -230,19 +230,18 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
     kx = np.fft.fftfreq(len(fftfield)) * 2 * np.pi
 
     # free space propagator is
-    root_km = km**2 - kx**2
-    rt0 = (root_km > 0)
     if method == "helmholtz":
         # exp(i*sqrt(km²-kx²)*d)
         # Also subtract incoming plane wave. We are only considering
         # the scattered field here.
-
+        root_km = km**2 - kx**2
+        rt0 = (root_km > 0)
         # multiply by rt0 (filter in Fourier space)
         fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
         # exp(i*d*(km-kx²/(2*km))
         #fstemp = np.exp(-1j * d * (kx**2/(2*km)))
-        fstemp = np.exp(1j * d * rt0 * (kx**2/(2*km)))
+        fstemp = np.exp(-1j * d * (kx**2/(2*km)))
     else:
         raise ValueError("Unknown method: {}".format(method))
 

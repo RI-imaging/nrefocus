@@ -113,10 +113,9 @@ def test_2d_autofocus_fresnel_average_gradient():
             ret_d=True,
             ret_grad=False,
             num_cpus=1)
-    # it is an accident that these values are so close:
-    print("  correct / expected / refocused distances:", -1*d, -5.00841750842, dnew)
-    assert np.allclose(0, np.angle(nfield/rfield), atol=.138)
-    assert np.allclose(1, np.abs(nfield/rfield), atol=.178)
+    print("  correct / expected / refocused distances:", -1*d, -7.56172839506, dnew)
+    assert np.allclose(0, np.angle(nfield/rfield), atol=.125)
+    assert np.allclose(1, np.abs(nfield/rfield), atol=.147)
 
 
 def test_2d_autofocus_stack_same_dist_nopadding():

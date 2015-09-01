@@ -229,7 +229,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
         assert len(roi) == len(field.shape) * \
             2, "ROI must match field dimension"
 
-    roi = 1*np.array(roi)
+    
 
     initshape = field.shape
     Fshape = len(initshape)
@@ -240,6 +240,8 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
             roi = (0, 0, field.shape[0], field.shape[1])
         else:
             roi = (0, field.shape[0])
+    
+    roi = 1*np.array(roi)
 
     if padding:
         # Pad with correct complex number

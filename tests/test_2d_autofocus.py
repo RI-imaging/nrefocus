@@ -215,7 +215,7 @@ def test_2d_autofocus_stack_same_dist():
     
     assert np.allclose(nfield.flatten().view(float),
                        nfield_same.flatten().view(float),
-                       atol=4.61e-5)
+                       atol=2e-3)
 
     
 # Get results

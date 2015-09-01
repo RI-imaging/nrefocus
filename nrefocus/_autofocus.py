@@ -44,7 +44,8 @@ def autofocus(field, nm, res, ival, roi=None,
         - "rms contrast" : RMS contrast of phase data
         - "spectrum" : sum of filtered Fourier coefficients
     padding: bool
-        Perform zero padding before Fourier transform.
+        Perform padding with linear ramp from edge to average
+        to reduce ringing artifacts.
     red_d : bool
         Return the autofocusing distance in pixels. Defaults to False.
     red_grad : bool
@@ -103,7 +104,8 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     metric : str
         see `autofocus_field`.
     padding : bool
-        Perform padding before Fourier transform.
+        Perform padding with linear ramp from edge to average
+        to reduce ringing artifacts.
     ret_dopt : bool
         Return optimized distance and gradient plotting data.
     same_dist : bool
@@ -219,10 +221,15 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
         accuracy for fine localization percentage of gradient change
     return_gradient:
         return x and y values of computed gradient
+    padding : bool
+        perform padding with linear ramp from edge to average
+        to reduce ringing artifacts.
     """
     if roi is not None:
         assert len(roi) == len(field.shape) * \
             2, "ROI must match field dimension"
+
+    roi = 1*np.array(roi)
 
     initshape = field.shape
     Fshape = len(initshape)
@@ -235,10 +242,22 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
             roi = (0, field.shape[0])
 
     if padding:
+        # Pad with correct complex number
+        stlen = 10
         if Fshape == 2:
+            padsize=(int(initshape[0]/2), int(initshape[1]/2))
+            mask = np.zeros(field.shape, dtype=bool)
+            mask[stlen:-stlen, stlen:-stlen] = True
+            border = field[~mask]
+            padval = np.average(np.abs(border))*np.exp(1j*np.average(np.angle(border)))
             field = np.pad(field,
-                           ((0, initshape[0]), (0, initshape[1])),
-                           mode="mean", stat_length=10)
+                           ((padsize[0], padsize[0]), (padsize[1], padsize[1])),
+                           mode="linear_ramp", end_values=((padval,padval),(padval,padval)))
+            roi[0] += padsize[0]
+            roi[2] += padsize[0]
+            roi[1] += padsize[1]
+            roi[3] += padsize[1]
+            
         else:
             field = np.pad(field,
                            (0, initshape[0]),
@@ -307,7 +326,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
 
     if padding:
         if Fshape == 2:
-            fsp = fsp[:initshape[0], :initshape[1]]
+            fsp = fsp[padsize[0]:-padsize[0], padsize[1]:-padsize[1]]
         else:
             fsp = fsp[:initshape[0]]
 

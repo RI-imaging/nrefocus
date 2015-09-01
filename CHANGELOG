@@ -1,0 +1,4 @@
+0.1.4
+ - improved padding in Fourier space in 2D:
+   - linear ramp padding on both axes
+   - pad with average field

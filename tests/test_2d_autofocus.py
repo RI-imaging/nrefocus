@@ -194,6 +194,7 @@ def test_2d_autofocus_stack_same_dist():
             ret_grads=False,
             num_cpus=1,
             copy=True)
+
     assert np.allclose(np.array(rfield).flatten().view(float),
                        np.array(nfield).flatten().view(float),
                        atol=.013)

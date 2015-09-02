@@ -255,6 +255,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
             field = np.pad(field,
                            ((padsize[0], padsize[0]), (padsize[1], padsize[1])),
                            mode="linear_ramp", end_values=((padval,padval),(padval,padval)))
+            
             roi[0] += padsize[0]
             roi[2] += padsize[0]
             roi[1] += padsize[1]

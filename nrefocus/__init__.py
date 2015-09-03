@@ -60,5 +60,6 @@ You can find out what version you are using by typing
 
 from ._autofocus import *
 from ._propagate import *
+from . import pad
 
 from ._version import version as __version__

@@ -7,6 +7,7 @@ import numpy as np
 
 
 from . import metrics
+from . import pad
 from ._propagate import fft_propagate, refocus_stack
 
 
@@ -157,31 +158,10 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     if same_dist:
         # find average dopt
         davg = np.average(dopt)
-
-        if padding:
-            initshape = fieldstack[0].shape
-            Fshape = len(initshape)
-            
-            if Fshape == 2:
-                fieldstack = np.pad(fieldstack,
-                                    ((0, 0),
-                                     (0, initshape[0]),
-                                     (0, initshape[1])),
-                                    mode="mean", stat_length=10)
-            else:
-                fieldstack = np.pad(fieldstack,
-                                    ((0,0),
-                                     (0, initshape[0])),
-                                    mode="mean", stat_length=10)
-
         newstack = refocus_stack(fieldstack, davg, nm, res,
-                                 num_cpus=num_cpus, copy=copy)
+                                 num_cpus=num_cpus, copy=copy,
+                                 padding=padding)
 
-        if padding:
-            if Fshape == 2:
-                newstack = newstack[:, :initshape[0], :initshape[1]]
-            else:
-                newstack = newstack[:, :initshape[0]]
 
     ret_list = [newstack]
     if ret_ds:
@@ -229,8 +209,6 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
         assert len(roi) == len(field.shape) * \
             2, "ROI must match field dimension"
 
-    
-
     initshape = field.shape
     Fshape = len(initshape)
     propfunc = fft_propagate
@@ -245,26 +223,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
 
     if padding:
         # Pad with correct complex number
-        stlen = 10
-        if Fshape == 2:
-            padsize=(int(initshape[0]/2), int(initshape[1]/2))
-            mask = np.zeros(field.shape, dtype=bool)
-            mask[stlen:-stlen, stlen:-stlen] = True
-            border = field[~mask]
-            padval = np.average(np.abs(border))*np.exp(1j*np.average(np.angle(border)))
-            field = np.pad(field,
-                           ((padsize[0], padsize[0]), (padsize[1], padsize[1])),
-                           mode="linear_ramp", end_values=((padval,padval),(padval,padval)))
-            
-            roi[0] += padsize[0]
-            roi[2] += padsize[0]
-            roi[1] += padsize[1]
-            roi[3] += padsize[1]
-            
-        else:
-            field = np.pad(field,
-                           (0, initshape[0]),
-                           mode="mean", stat_length=10)
+        field = pad.pad_add(field)
 
     if ival[0] > ival[1]:
         ival = (ival[1], ival[0])
@@ -297,18 +256,18 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
     if minid == len(zc) - 1:
         zc += zc[1] - zc[0]
         minid -= 1
-    ival = (zc[minid - 1], zc[minid + 1])
+    zf = 1*zc
+    gradf = 1* gradc
 
     numfine = 10
     mingrad = gradc[minid]
 
     while True:
-
         gradf = np.zeros(numfine)
+        ival = (zf[minid - 1], zf[minid + 1])
         zf = np.linspace(ival[0], ival[1], numfine)
         for i in range(len(zf)):
             d = zf[i]
-            #fsp = propfunc(fftfield, d, nm, res, fftplan=fftplan)
             fsp = propfunc(fftfield, d, nm, res)
             if Fshape == 2:
                 gradf[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
@@ -321,17 +280,14 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
         if minid == len(zf) - 1:
             zf += zf[1] - zf[0]
             minid -= 1
-        ival = (zf[minid - 1], zf[minid + 1])
         if abs(mingrad - gradf[minid]) / 100 < fine_acc:
             break
 
     minid = np.argmin(gradf)
+    fsp = propfunc(fftfield, zf[minid], nm, res)
 
     if padding:
-        if Fshape == 2:
-            fsp = fsp[padsize[0]:-padsize[0], padsize[1]:-padsize[1]]
-        else:
-            fsp = fsp[:initshape[0]]
+        fsp = pad.pad_rem(fsp)
 
     if return_gradient:
         return fsp, zf[minid], [(zc, gradc), (zf, gradf)]

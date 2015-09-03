@@ -9,8 +9,6 @@ import os
 from os.path import abspath, dirname, join, split
 import sys
 
-
-
 # Add parent directory to beginning of path variable
 DIR = dirname(abspath(__file__))
 sys.path = [split(DIR)[0]] + sys.path
@@ -25,7 +23,8 @@ def test_1d_refocus1():
                               d = 42.13,
                               nm = 1.333,
                               res = 3.25,
-                              method = "helmholtz")
+                              method = "helmholtz",
+                              padding = False)
     assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
     
     

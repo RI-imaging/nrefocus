@@ -5,6 +5,7 @@ from __future__ import division, print_function
 import multiprocessing as mp
 import numpy as np
 
+from . import pad
 
 __all__ = ["fft_propagate", "refocus", "refocus_stack"]
 
@@ -12,7 +13,7 @@ __all__ = ["fft_propagate", "refocus", "refocus_stack"]
 _cpu_count = mp.cpu_count()
 
 
-def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
+def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
     """ Refocus a 1D or 2D field
 
 
@@ -35,7 +36,10 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
 
     num_cpus : int
         Not implemented. Only one CPU is used.
-
+    padding : bool
+        perform padding with linear ramp from edge to average
+        to reduce ringing artifacts.
+        .. versionadded:: 0.1.4
 
     Returns
     -------
@@ -55,13 +59,21 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1):
         if name in loc:
             vardict[name] = loc[name]
 
+    if padding:
+        field = pad.pad_add(field)
+
     vardict["fftfield"] = np.fft.fftn(field)
 
-    return func(**vardict)
+    refoc = func(**vardict)
+    
+    if padding:
+        refoc = pad.pad_rem(refoc)
+
+    return refoc
 
 
 def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
-                  num_cpus=_cpu_count, copy=True):
+                  num_cpus=_cpu_count, copy=True, padding=True):
     """ Refocus a stack of 1D or 2D fields
 
 
@@ -87,7 +99,10 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
         Defines the number of CPUs to be used for refocusing.
     copy : bool
         If False, overwrites input stack.
-
+    padding : bool
+        Perform padding with linear ramp from edge to average
+        to reduce ringing artifacts.
+        .. versionadded:: 0.1.4
 
     Returns
     -------
@@ -107,6 +122,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
 
     # child processes should only use one cpu
     vardict["num_cpus"] = 1
+    vardict["padding"] = padding
 
     M = fieldstack.shape[0]
     stackargs = list()
@@ -126,6 +142,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
             args.append(val)
         stackargs.append(args[::-1])
 
+
     p = mp.Pool(num_cpus)
     result = p.map_async(_refocus_wrapper, stackargs).get()
     p.close()
@@ -133,7 +150,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     p.join()
 
     if copy:
-        data = np.zeros([M] + list(result[0].shape), dtype=result[0].dtype)
+        data = np.zeros(fieldstack.shape, dtype=result[0].dtype)
     else:
         data = fieldstack
 

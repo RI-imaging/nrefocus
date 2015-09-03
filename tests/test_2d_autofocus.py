@@ -47,7 +47,7 @@ def test_2d_autofocus_helmholtz_average_gradient():
             ret_grad=False,
             num_cpus=1,
             )
-    print("  correct / expected / refocused distances:", -1*d, -3.08922558923, dnew)
+    print("  correct / expected / refocused distances:", -1*d, -3.25757575758, dnew)
     assert np.allclose(0, np.angle(nfield/rfield), atol=.047)
     assert np.allclose(1, np.abs(nfield/rfield), atol=.081)
 
@@ -67,6 +67,7 @@ def test_2d_autofocus_helmholtz_average_gradient_zero():
                               nm=nm,
                               res=res,
                               method=method,
+                              padding=False
                               )
     # then try to refocus it
     nfield, dnew = nrefocus.autofocus(
@@ -113,7 +114,7 @@ def test_2d_autofocus_fresnel_average_gradient():
             ret_d=True,
             ret_grad=False,
             num_cpus=1)
-    print("  correct / expected / refocused distances:", -1*d, -7.56172839506, dnew)
+    print("  correct / expected / refocused distances:", -1*d, -5.68181818182, dnew)
     assert np.allclose(0, np.angle(nfield/rfield), atol=.125)
     assert np.allclose(1, np.abs(nfield/rfield), atol=.147)
 
@@ -180,9 +181,10 @@ def test_2d_autofocus_stack_same_dist():
                                     d=d,
                                     nm=nm,
                                     res=res,
-                                    method=method)
+                                    method=method,
+                                    padding=True)
     nfield, dnew = nrefocus.autofocus_stack(
-            fieldstack=rfield,
+            fieldstack=1*rfield,
             nm=nm,
             res=res,
             ival=(-1.5*d, -0.5*d),
@@ -200,8 +202,8 @@ def test_2d_autofocus_stack_same_dist():
                        atol=.013)
 
     # reconstruction distance is same in above case
-    nfield_same = nrefocus.autofocus_stack(
-            fieldstack=rfield,
+    nfield_same, ds2 = nrefocus.autofocus_stack(
+            fieldstack=1*rfield,
             nm=nm,
             res=res,
             ival=(-1.5*d, -0.5*d),
@@ -209,14 +211,12 @@ def test_2d_autofocus_stack_same_dist():
             metric=metric,
             padding=True,
             same_dist=True,
-            ret_ds=False,
+            ret_ds=True,
             ret_grads=False,
             num_cpus=1,
             copy=True)
-    
-    assert np.allclose(nfield.flatten().view(float),
-                       nfield_same.flatten().view(float),
-                       atol=2e-3)
+
+    assert np.allclose(nfield, nfield_same)
 
     
 # Get results

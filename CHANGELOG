@@ -1,4 +1,8 @@
 0.1.4
- - improved padding in Fourier space in 2D:
-   - linear ramp padding on both axes
-   - pad with average field
+ - Padding is now available in all methods (#2)
+ - Added new convenient submodule `pad`
+ - Bugfix: autofocusing did not return the correct focusing distance.
+   This resulted in a slight offset in the refocusing distance for
+   the method `autofocus_stack` when `same_dist=True` was set.
+ - New test functions for `pad`
+

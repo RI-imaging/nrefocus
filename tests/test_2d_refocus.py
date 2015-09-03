@@ -25,7 +25,8 @@ def test_2d_refocus1():
                               d = 2.13,
                               nm = 1.533,
                               res = 8.25,
-                              method = "helmholtz")
+                              method = "helmholtz",
+                              padding=False)
     assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
 
 
@@ -38,7 +39,8 @@ def test_2d_refocus_stack():
                                     d = 2.13,
                                     nm = 1.533,
                                     res = 8.25,
-                                    method = "helmholtz")
+                                    method = "helmholtz",
+                                    padding = False)
     assert np.allclose(np.array(rfield).flatten().view(float), results[myname])
     
     

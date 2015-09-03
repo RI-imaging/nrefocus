@@ -5,4 +5,3 @@
    This resulted in a slight offset in the refocusing distance for
    the method `autofocus_stack` when `same_dist=True` was set.
  - New test functions for `pad`
-

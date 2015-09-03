@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
+
 .. versionadded:: 0.1.4
 
 Convenience functions for padding.

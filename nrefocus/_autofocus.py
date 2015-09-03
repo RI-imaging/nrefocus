@@ -47,6 +47,9 @@ def autofocus(field, nm, res, ival, roi=None,
     padding: bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
+
+        .. versionchanged:: 0.1.4
+           improved padding value and padding location
     red_d : bool
         Return the autofocusing distance in pixels. Defaults to False.
     red_grad : bool
@@ -107,6 +110,9 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     padding : bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
+        
+        .. versionchanged:: 0.1.4
+           improved padding value and padding location
     ret_dopt : bool
         Return optimized distance and gradient plotting data.
     same_dist : bool
@@ -204,6 +210,9 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
     padding : bool
         perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
+        
+        .. versionchanged:: 0.1.4
+           improved padding value and padding location
     """
     if roi is not None:
         assert len(roi) == len(field.shape) * \

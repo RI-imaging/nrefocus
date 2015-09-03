@@ -39,6 +39,7 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
     padding : bool
         perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
+        
         .. versionadded:: 0.1.4
 
     Returns
@@ -102,6 +103,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     padding : bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
+        
         .. versionadded:: 0.1.4
 
     Returns

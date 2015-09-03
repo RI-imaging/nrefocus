@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Data from 2014_11_11/5min_rot_crash_sub1 -> frame 55
+#
 """ 
 2D Refocusing of a live cell
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

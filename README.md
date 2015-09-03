@@ -24,9 +24,3 @@ or download the package and run
 Some functionalities of the module are tested with
 
     python setup.py test
-
-
-#### Financial support
-This project has received funding from the European Union’s Seventh
-Framework Programme for research, technological development and
-demonstration under grant agreement no 282060.

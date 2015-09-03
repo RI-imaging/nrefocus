@@ -10,7 +10,11 @@ About
 
 For a quick overview, see :ref:`genindex`.
 
-Fork `nrefocus on GitHub <https://github.com/paulmueller/nrefocus/>`_.
+Acknowledgments
+~~~~~~~~~~~~~~~
+This project has received funding from the European Union’s Seventh Framework
+Programme for research, technological development and demonstration under
+grant agreement no 282060.
 
 
 Theory
@@ -63,3 +67,7 @@ Autofocus field stacks
 .. autofunction:: autofocus_stack
 
 
+Examples
+========
+
+.. automodule:: refocus_cell

@@ -26,6 +26,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.abspath(
 
 sys.path.append(os.path.abspath('extensions'))
 
+# include examples
+sys.path.append(os.path.abspath(os.path.dirname(__file__)+"/../examples"))
 
 # There should be a file "setup.py" that has the property "version"
 from setup import author, authors, description, name, version, year

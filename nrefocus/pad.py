@@ -59,12 +59,12 @@ def pad_add(av, size=None, stlen=10):
     ----------
     av : complex 1D or 2D ndarray
         The array that will be padded.
-    stlen : int, optional
-        The thickness of the frame within `av` that will be usde to
-        compute an average value for padding.
     size : int or tuple of length 1 (1D) or tuple of length 2 (2D), optional
         The final size of the padded array. Defaults to double the size
         of the input array.
+    stlen : int, optional
+        The thickness of the frame within `av` that will be used to
+        compute an average value for padding.
     
     
     Returns

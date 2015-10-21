@@ -6,9 +6,9 @@ nrefocus reference
 About
 :::::
 
-.. automodule:: nrefocus
-
 For a quick overview, see :ref:`genindex`.
+
+.. automodule:: nrefocus
 
 Acknowledgments
 ~~~~~~~~~~~~~~~

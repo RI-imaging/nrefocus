@@ -26,7 +26,7 @@ Citing nrefocus
 Please cite this package if you are using it in a scientific
 publication.
 
-This package should be cited with reference [1]_
+This package should be cited like this [1]_.
 
 You can find out what version you are using by typing
 (in a Python console):

@@ -26,24 +26,21 @@ Citing nrefocus
 Please cite this package if you are using it in a scientific
 publication.
 
-This package should be cited like this 
-(replace "x.x.x" with the actual version of nrefocus that you used):
-
-.. topic:: cite
-
-    Paul Müller (2013) *nrefocus: Python algorithms for numerical
-    focusing* (Version x.x.x) [Software].
-    Available at https://pypi.python.org/pypi/nrefocus/
-
+This package should be cited with reference [1]_
 
 You can find out what version you are using by typing
 (in a Python console):
-
 
     >>> import nrefocus
     >>> nrefocus.__version__
     '0.1.2'
 
+
+References
+----------
+.. [1] Paul Müller (2013) *nrefocus: Python algorithms for numerical
+       focusing* (Version x.x.x) [Software].
+       Available at https://pypi.python.org/pypi/nrefocus/.
 
 """
 

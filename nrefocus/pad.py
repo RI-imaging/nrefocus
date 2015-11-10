@@ -102,10 +102,14 @@ def _pad_add_1d(av, size, stlen):
         padval = np.average(np.abs(border))*np.exp(1j*np.average(np.angle(border)))
     else:
         padval = np.average(border)
+    if np.__version__[:3] in ["1.7", "1.8", "1.9"]:
+        end_values = ((padval,padval),)
+    else:
+        end_values = (padval,)
     bv = np.pad(av,
-                (0, padx),
+                padx,
                 mode="linear_ramp",
-                end_values=(padval,))
+                end_values=end_values)
     # roll the array so that the padding values are on the right
     bv = np.roll(bv, -padx[0], 0)
     return bv
@@ -126,10 +130,14 @@ def _pad_add_2d(av, size, stlen):
         padval = np.average(np.abs(border))*np.exp(1j*np.average(np.angle(border)))
     else:
         padval = np.average(border)
+    if np.__version__[:3] in ["1.7", "1.8", "1.9"]:
+        end_values = ((padval,padval),(padval,padval))
+    else:
+        end_values = (padval,)
     bv = np.pad(av,
-                ((0, padx), (0, pady)),
+                (padx, pady),
                 mode="linear_ramp",
-                end_values=(padval,))
+                end_values=end_values)
     # roll the array so that the padding values are on the right
     bv = np.roll(bv, -padx[0], 0)
     bv = np.roll(bv, -pady[0], 1)

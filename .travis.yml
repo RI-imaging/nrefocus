@@ -1,14 +1,28 @@
 language: python
-env:
-  global:
-  - GH_REF: github.com/paulmueller/nrefocus.git
-  - secure: IUP1CPflkzUo3YFYQYZqPU03n5eB7lutvGAzFk1AieXsjs2J6bK7gGZZ3Us8flhGcwaeZqjLH4NFUSAlW0mDxeLxWZeCpCF9Z44fcD34zft5+UoB363jGjcyX0xxek7NWKpsfDhKRI96CE8JtvwRGeuFTLgXVD4gJVjWdxX2c6A=
-notifications:
-  email: false
 python:
 - '2.7'
 - '3.4'
 - '3.5'
+env:
+  global:
+  - GH_REF: github.com/paulmueller/nrefocus.git
+  - secure: IUP1CPflkzUo3YFYQYZqPU03n5eB7lutvGAzFk1AieXsjs2J6bK7gGZZ3Us8flhGcwaeZqjLH4NFUSAlW0mDxeLxWZeCpCF9Z44fcD34zft5+UoB363jGjcyX0xxek7NWKpsfDhKRI96CE8JtvwRGeuFTLgXVD4gJVjWdxX2c6A=
+  matrix:
+  - NUMPY_VERSION_MAX="1.7.9"
+  - NUMPY_VERSION_MAX="1.8.9"
+  - NUMPY_VERSION_MAX="1.9.9"
+  - NUMPY_VERSION_MAX="1.10.9"
+matrix:
+  exclude:
+    # These things won't install with anaconda:
+    - python: "3.5"
+      env: NUMPY_VERSION_MAX="1.7.9"
+    - python: "3.5"
+      env: NUMPY_VERSION_MAX="1.8.9"
+    - python: "3.4"
+      env: NUMPY_VERSION_MAX="1.7.9"
+notifications:
+  email: false
 install:
 # numpy is already installed in the virtualenv
 - travis_retry pip install coverage

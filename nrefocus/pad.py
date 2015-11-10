@@ -103,7 +103,7 @@ def _pad_add_1d(av, size, stlen):
     else:
         padval = np.average(border)
     bv = np.pad(av,
-                padx,
+                (0, padx),
                 mode="linear_ramp",
                 end_values=(padval,))
     # roll the array so that the padding values are on the right
@@ -127,7 +127,7 @@ def _pad_add_2d(av, size, stlen):
     else:
         padval = np.average(border)
     bv = np.pad(av,
-                (padx, pady),
+                ((0, padx), (0, pady)),
                 mode="linear_ramp",
                 end_values=(padval,))
     # roll the array so that the padding values are on the right

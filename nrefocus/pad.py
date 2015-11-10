@@ -105,7 +105,7 @@ def _pad_add_1d(av, size, stlen):
     bv = np.pad(av,
                 padx,
                 mode="linear_ramp",
-                end_values=((padval, padval),))
+                end_values=(padval,))
     # roll the array so that the padding values are on the right
     bv = np.roll(bv, -padx[0], 0)
     return bv
@@ -129,7 +129,7 @@ def _pad_add_2d(av, size, stlen):
     bv = np.pad(av,
                 (padx, pady),
                 mode="linear_ramp",
-                end_values=((padval,padval),(padval,padval)))
+                end_values=(padval,))
     # roll the array so that the padding values are on the right
     bv = np.roll(bv, -padx[0], 0)
     bv = np.roll(bv, -pady[0], 1)

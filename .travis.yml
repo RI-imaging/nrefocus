@@ -23,6 +23,14 @@ matrix:
       env: NUMPY_VERSION_MAX="1.7.9"
 notifications:
   email: false
+before_install:
+- wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+- chmod +x miniconda.sh
+- INSTALL_DIR=${HOME}
+- ./miniconda.sh -b -p ${INSTALL_DIR}/miniconda
+- export PATH=${INSTALL_DIR}/miniconda/bin:$PATH
+- conda update --yes conda
+- travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION pip "numpy<=$NUMPY_VERSION_MAX"
 install:
 # numpy is already installed in the virtualenv
 - travis_retry pip install coverage

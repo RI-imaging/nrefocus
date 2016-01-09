@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 # To create a distribution package for pip or easy-install:
 # python setup.py sdist
-from setuptools import setup, find_packages, Command
-from os.path import join, dirname, realpath
-import subprocess as sp
+from setuptools import setup
+from os.path import exists, dirname, realpath
 import sys
-from warnings import warn
 
 
 author = u"Paul Müller"
@@ -34,11 +32,7 @@ if __name__ == "__main__":
         package_dir={name: name},
         license="BSD (3 clause)",
         description=description,
-        long_description="""This module provides the means to numerically
-refocus complex wave fields, such as those acquired using quantitative 
-phase measuring techniques in modern microscopy. The module also comes
-with a couple of autofocusing metrics.
-    """,
+        long_description=open('README.rst').read() if exists('README.rst') else '',
         install_requires=["NumPy>=1.5.1"],
         setup_requires=['pytest-runner'],
         tests_require=["pytest"],

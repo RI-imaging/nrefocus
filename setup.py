@@ -22,19 +22,6 @@ try:
 except:
     version = "unknown"
 
-class PyTest(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import sys,subprocess
-        errno = subprocess.call([sys.executable, 'tests/runtests.py'])
-        raise SystemExit(errno)
-
 
 if __name__ == "__main__":
     setup(
@@ -53,7 +40,8 @@ phase measuring techniques in modern microscopy. The module also comes
 with a couple of autofocusing metrics.
     """,
         install_requires=["NumPy>=1.5.1"],
-    #    tests_require=["psutil"],
+        setup_requires=['pytest-runner'],
+        tests_require=["pytest"],
         keywords=["autofocus", "refocus", "numerical focusing", "DHM",
                   "phase imaging", "quantitative phase",
                   "digital holography"],
@@ -63,8 +51,6 @@ with a couple of autofocusing metrics.
             'Programming Language :: Python :: 3.4',
             'Intended Audience :: Science/Research'
                      ],
-        platforms=['ALL'],
-        cmdclass = {'test': PyTest,
-                    }
+        platforms=['ALL']
         )
 

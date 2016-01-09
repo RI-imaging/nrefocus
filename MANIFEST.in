@@ -1,0 +1,7 @@
+include examples/*.py
+include examples/*.zip
+include doc/*
+include doc/extensions/*.py
+include README.md
+include tests/data/*.txt
+include tests/*.py

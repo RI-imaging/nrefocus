@@ -37,7 +37,7 @@ install:
 - travis_retry pip install coveralls
 - pip freeze
 script:
-- coverage run --source=nrefocus tests/runtests.py
+- coverage run --source=nrefocus ./setup.py test
 - coverage report -m
 after_success:
 - coveralls --verbose

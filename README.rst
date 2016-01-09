@@ -28,7 +28,8 @@ or download the package and run
     python setup.py install
 
 
-#### Testing
+Testing
+-------
 Some functionalities of the module are tested with
 
 ::

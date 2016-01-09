@@ -1,3 +1,4 @@
+include CHANGELOG
 include examples/*.py
 include examples/*.zip
 include doc/*

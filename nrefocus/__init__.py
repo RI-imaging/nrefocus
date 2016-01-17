@@ -18,7 +18,7 @@ If you have Python and :py:mod:`numpy` installed, simply run
     pip install nrefocus
 
 The source code of nrefocus is available at
-https://github.com/paulmueller/nrefocus.
+https://github.com/RI-imaging/nrefocus.
 
 
 Citing nrefocus

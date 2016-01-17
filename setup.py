@@ -25,7 +25,7 @@ if __name__ == "__main__":
     setup(
         name=name,
         author=author,
-        url='https://github.com/paulmueller/nrefocus',
+        url='https://github.com/RI-imaging/nrefocus',
         author_email='paul.mueller@biotec.tu-dresden.de',
         version=version,
         packages=[name],

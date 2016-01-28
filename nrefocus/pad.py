@@ -8,7 +8,6 @@ Convenience functions for padding.
 """
 from __future__ import division, print_function
 
-import multiprocessing as mp
 import numpy as np
 
 

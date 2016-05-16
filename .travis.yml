@@ -5,7 +5,7 @@ python:
 - '3.5'
 env:
   global:
-  - GH_REF: github.com/paulmueller/nrefocus.git
+  - GH_REF: github.com/RI-imaging/nrefocus.git
   - secure: IUP1CPflkzUo3YFYQYZqPU03n5eB7lutvGAzFk1AieXsjs2J6bK7gGZZ3Us8flhGcwaeZqjLH4NFUSAlW0mDxeLxWZeCpCF9Z44fcD34zft5+UoB363jGjcyX0xxek7NWKpsfDhKRI96CE8JtvwRGeuFTLgXVD4gJVjWdxX2c6A=
   matrix:
   - NUMPY_VERSION_MAX="1.7.9"

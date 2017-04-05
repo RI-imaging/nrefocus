@@ -100,7 +100,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     fieldstack : 2d or 3d ndarray
         Electric field is BG-Corrected, i.e. Field = EX/BEx
     nm : float
-        Refractive index of medeium.
+        Refractive index of medium.
     res : float
         Size of wavelength in pixels.
     ival : tuple of floats

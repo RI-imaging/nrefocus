@@ -1,0 +1,5 @@
+formats:
+ - pdf
+ - epub
+requirements_file: docs/requirements.txt
+

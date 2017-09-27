@@ -1,7 +1,7 @@
 nrefocus
 ========
 
-|PyPI Version| |Build Status| |Coverage Status|
+|PyPI Version| |Build Status| |Coverage Status| |Docs Status|
 
 Numerically (auto)refocus complex wave fields, such as those acquired using
 quantitative phase imaging techniques in modern microscopy.
@@ -44,4 +44,5 @@ Some functionalities of the module are tested with
    :target: https://travis-ci.org/RI-imaging/nrefocus
 .. |Coverage Status| image:: https://img.shields.io/coveralls/RI-imaging/nrefocus.svg
    :target: https://coveralls.io/r/RI-imaging/nrefocus
-
+.. |Docs Status| image:: https://readthedocs.org/projects/nrefocus/badge/?version=latest
+   :target: https://readthedocs.org/projects/nrefocus/builds/

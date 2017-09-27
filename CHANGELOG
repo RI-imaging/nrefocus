@@ -1,3 +1,7 @@
+0.1.6
+ - Move documentation from GitHub to readthedocs.io
+ - Add universal wheel on PyPI
+ - Update tests on travis with new versions of NumPy
 0.1.5
  - Code cleanup
 0.1.4

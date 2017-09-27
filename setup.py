@@ -9,7 +9,7 @@ import sys
 
 author = u"Paul Müller"
 authors = [author]
-description = 'library for numerical focusing (refocusing, autofocusing) of complex wave fields'
+description = 'numerical focusing (refocusing, autofocusing) of complex wave fields'
 name = 'nrefocus'
 year = "2015"
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         name=name,
         author=author,
         url='https://github.com/RI-imaging/nrefocus',
-        author_email='paul.mueller@biotec.tu-dresden.de',
+        author_email='dev@craban.de',
         version=version,
         packages=[name],
         package_dir={name: name},
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         classifiers= [
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3',
             'Intended Audience :: Science/Research'
                      ],
         platforms=['ALL']

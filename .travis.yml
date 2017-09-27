@@ -3,40 +3,19 @@ python:
 - '2.7'
 - '3.4'
 - '3.5'
-env:
-  global:
-  - GH_REF: github.com/RI-imaging/nrefocus.git
-  - secure: IUP1CPflkzUo3YFYQYZqPU03n5eB7lutvGAzFk1AieXsjs2J6bK7gGZZ3Us8flhGcwaeZqjLH4NFUSAlW0mDxeLxWZeCpCF9Z44fcD34zft5+UoB363jGjcyX0xxek7NWKpsfDhKRI96CE8JtvwRGeuFTLgXVD4gJVjWdxX2c6A=
-  matrix:
-  - NUMPY_VERSION_MAX="1.7.9"
-  - NUMPY_VERSION_MAX="1.8.9"
-  - NUMPY_VERSION_MAX="1.9.9"
-  - NUMPY_VERSION_MAX="1.10.9"
-matrix:
-  exclude:
-    # These things won't install with anaconda:
-    - python: "3.5"
-      env: NUMPY_VERSION_MAX="1.7.9"
-    - python: "3.5"
-      env: NUMPY_VERSION_MAX="1.8.9"
-    - python: "3.4"
-      env: NUMPY_VERSION_MAX="1.7.9"
+- '3.6'
 notifications:
   email: false
-before_install:
-# Using the major Python version in the conda installer fixes this error:
-#UnsatisfiableError: The following specifications were found to be in conflict:
-#  - enum34 -> python 2.6*|2.7*|3.3*
-#  - python 3.4*
-- wget https://repo.continuum.io/miniconda/Miniconda${TRAVIS_PYTHON_VERSION:0:1}-latest-Linux-x86_64.sh -O miniconda.sh
-- chmod +x miniconda.sh
-- INSTALL_DIR=${HOME}
-- ./miniconda.sh -b -p ${INSTALL_DIR}/miniconda
-- export PATH=${INSTALL_DIR}/miniconda/bin:$PATH
-- conda update --yes conda
-- travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION pip "numpy<=$NUMPY_VERSION_MAX"
+env:
+  matrix:
+  - NUMPY="1.9.1"
+  - NUMPY="1.10.1"
+  - NUMPY="1.11.3"
+  - NUMPY="1.12.1"
+  - NUMPY="1.13.1"
 install:
-# numpy is already installed in the virtualenv
+- travis_retry pip install "numpy==$NUMPY"
+- "travis_retry pip install . --only-binary=:all:"
 - travis_retry pip install coverage
 - travis_retry pip install coveralls
 - pip freeze
@@ -45,7 +24,3 @@ script:
 - coverage report -m
 after_success:
 - coveralls --verbose
-- git config credential.helper "store --file=.git/credentials"
-- echo "https://${GH_TOKEN}:@github.com" > .git/credentials
-- if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then pip install numpydoc sphinx; fi
-- if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then python doc/deploy_ghpages.py; fi

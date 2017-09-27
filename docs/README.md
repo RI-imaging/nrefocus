@@ -1,10 +1,10 @@
 nrefocus documentation
 ======================
+To install the requirements for building the documentation, run
 
-Install [numpydoc](https://pypi.python.org/pypi/numpydoc) and sphinx:
-
-    pip install numpydoc sphinx
+    pip install -r requirements.txt
 
 To compile the documentation, run
 
-    python setup.py build_sphinx
+    sphinx-build . html
+

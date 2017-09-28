@@ -73,7 +73,7 @@ extensions = [
 #              'sphinx.ext.viewcode',
 #              'sphinx.ext.todo',
 #             'inheritance_diagram',
-              'numpydoc',
+              'sphinx.ext.napoleon',
               'myviewcode',  
 #              'hidden_code_block',
 #              'sphinx.ext.autosummary'

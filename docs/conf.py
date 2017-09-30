@@ -40,6 +40,16 @@ install_requires = ["numpy"]
 for mod_name in install_requires:
     sys.modules[mod_name] = mock.Mock()
 
+# http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order
+# Order class attributes and functions in separate blocks
+autodoc_member_order = 'bysource'
+autodoc_mock_imports = install_requires
+
+# Display link to GitHub repo instead of doc on rtfd
+rst_prolog = """
+:github_url: https://github.com/RI-imaging/nrefocus
+"""
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -58,25 +68,13 @@ for mod_name in install_requires:
 
 
 extensions = [
-#              'matplotlib.sphinxext.mathmpl',
-#              'matplotlib.sphinxext.only_directives',
-#              'matplotlib.sphinxext.plot_directive',
-#              'sphinx.ext.viewcode',
-#               'ipython_directive',
               'sphinx.ext.intersphinx',
               'sphinx.ext.autosummary',
               'sphinx.ext.autodoc',
-#              'sphinx.ext.doctest',
-#              'ipython_console_highlighting',
-#               'sphinx.ext.pngmath',
               'sphinx.ext.mathjax',
-#              'sphinx.ext.viewcode',
-#              'sphinx.ext.todo',
-#             'inheritance_diagram',
               'sphinx.ext.napoleon',
+              'fancy_include',
               'myviewcode',  
-#              'hidden_code_block',
-#              'sphinx.ext.autosummary'
               ]
 
 

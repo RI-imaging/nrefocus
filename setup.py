@@ -33,12 +33,13 @@ if __name__ == "__main__":
                   "refocus",
                   "numerical focusing",
                   "quantitative phase imaging",
-                  "digital holographic microscopy"],
+                  "digital holographic microscopy",
+                  ],
         classifiers= [
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Intended Audience :: Science/Research'
-                     ],
+            ],
         platforms=['ALL']
         )

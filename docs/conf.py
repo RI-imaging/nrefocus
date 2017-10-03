@@ -12,23 +12,29 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import mock
-import os
-import sys
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+#
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('.'))
 
+# Get version number from qpimage._version file
+import mock
+import os.path as op
+import sys
+# include parent directory
+pdir = op.dirname(op.dirname(op.abspath(__file__)))
+sys.path.insert(0, pdir)
+# include extenstions
+sys.path.append(op.abspath('extensions'))
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.abspath(
-                    os.path.dirname(__file__)), '../')))
+# Mock all dependencies
+install_requires = ["numpy", "scipy"]
 
-sys.path.append(os.path.abspath('extensions'))
-
-# include examples
-sys.path.append(os.path.abspath(os.path.dirname(__file__)+"/../examples"))
+for mod_name in install_requires:
+    sys.modules[mod_name] = mock.Mock()
 
 # There should be a file "setup.py" that has the property "version"
 from setup import author, authors, description, name, version, year
@@ -67,14 +73,13 @@ rst_prolog = """
 #]
 
 
-extensions = [
-              'sphinx.ext.intersphinx',
+extensions = ['sphinx.ext.intersphinx',
               'sphinx.ext.autosummary',
               'sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.napoleon',
+              'sphinx.ext.viewcode',
               'fancy_include',
-              'myviewcode',  
               ]
 
 
@@ -308,10 +313,9 @@ texinfo_documents = [
 # -----------------------------------------------------------------------------
 # intersphinx
 # -----------------------------------------------------------------------------
-_python_doc_base = 'http://docs.python.org/2.7'
-intersphinx_mapping = {
-    _python_doc_base: None,
-    'http://docs.scipy.org/doc/numpy': None,
-    'http://docs.scipy.org/doc/scipy/reference': None,
-}
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {"python": ('https://docs.python.org/', None),
+                       "numpy": ('http://docs.scipy.org/doc/numpy', None),
+                       "scipy": ('https://docs.scipy.org/doc/scipy/reference/', None),
+                       }
 

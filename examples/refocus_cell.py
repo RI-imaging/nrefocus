@@ -1,121 +1,71 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Data from 2014_11_11/5min_rot_crash_sub1 -> frame 55
-""" 
-2D Refocusing of a live cell
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The data shows a live HL60 cell imaged with the camera SID4BIO from
-Phasics S.A. (France). The diameter of the cell is about 20µm.
+"""2D Refocusing of an HL60 cell
 
-
-.. figure::  ../examples/refocus_cell_repo.jpg
-   :align:   center
-
-   Numerically refocused HL60 cell.
-   
-
-Download the :download:`full example <../examples/refocus_cell.py>`.
+The data show a live HL60 cell imaged with quadriwave lateral shearing
+interferometry (SID4Bio, Phasics S.A., France).
+The diameter of the cell is about 20µm.
 """
-from __future__ import division, print_function
-
+import matplotlib.pylab as plt
 import numpy as np
-from os.path import dirname, abspath
-import sys
-import zipfile
-
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
+import unwrap
 
 import nrefocus
 
+from example_helper import load_cell
 
-def load_cell(fname="./HL60_field.zip"):
-    """Load zip file adn return complex field"""
-    arc = zipfile.ZipFile(fname)
-    for f in arc.filelist:
-        with arc.open(f) as fd:
-            if f.filename.count("imag"):
-                imag = np.loadtxt(fd)
+# load initial cell
+cell1 = load_cell("HL60_field.zip")
 
-            elif f.filename.count("real"):
-                real = np.loadtxt(fd)
-    
-    field = real + 1j*imag
-    return field
+# refocus to two different positions
+cell2 = nrefocus.refocus(cell1, 15, 1, 1)  # forward
+cell3 = nrefocus.refocus(cell1, -15, 1, 1)  # backward
 
-def create_axes():
-    fig, axes = plt.subplots(2,3, figsize=(10,6))
-    axes = axes.flatten()
-    for ax in axes:
-        ax.xaxis.set_major_locator(plt.NullLocator())
-        ax.yaxis.set_major_locator(plt.NullLocator())
-    
-    return fig, axes
+# amplitude range
+vmina = np.min(np.abs(cell1))
+vmaxa = np.max(np.abs(cell1))
+ampkw = {"cmap": plt.get_cmap("gray"),
+         "vmin": vmina,
+         "vmax": vmaxa}
 
-if __name__ == "__main__":
-    # We need the unwrap module to perform phase unwrapping
-    import unwrap
-    # We need matplotlib for plotting
-    import matplotlib.pylab as plt
-    
-    # Load initial cell
-    cell1 = load_cell()
-    # Refocus to two different positions
-    cell2 = nrefocus.refocus(cell1, 15, 1, 1)  # forward
-    cell3 = nrefocus.refocus(cell1, -15, 1, 1) # backward
+# phase range
+cell1p = unwrap.unwrap(np.angle(cell1))
+cell2p = unwrap.unwrap(np.angle(cell2))
+cell3p = unwrap.unwrap(np.angle(cell3))
+vminp = np.min(cell1p)
+vmaxp = np.max(cell1p)
+phakw = {"cmap": plt.get_cmap("coolwarm"),
+         "vmin": vminp,
+         "vmax": vmaxp}
 
-    ## Plot the results
-    # amplitude range    
-    vmina = np.min(np.abs(np.concatenate((cell1, cell2, cell3))))
-    vmaxa = np.max(np.abs(np.concatenate((cell1, cell2, cell3))))
-    ampkw = {"cmap": plt.cm.gray,  # @UndefinedVariable
-             "vmin": vmina,
-             "vmax": vmaxa-(vmaxa-vmina)/3}
-    
-    # phase range
-    cell1p = unwrap.unwrap(np.angle(cell1))
-    cell2p = unwrap.unwrap(np.angle(cell2))
-    cell3p = unwrap.unwrap(np.angle(cell3))
-    vminp = np.min(np.concatenate((cell1p, cell2p, cell3p)))
-    vmaxp = np.max(np.concatenate((cell1p, cell2p, cell3p)))
-    phakw = {"cmap": plt.cm.coolwarm,  # @UndefinedVariable
-             "vmin": vminp,
-             "vmax": vmaxp}
-    
-    # Plots
-    fig, axes = create_axes()
-    mapamp = axes[0].imshow(np.abs(cell3), **ampkw)
-    axes[1].imshow(np.abs(cell1), **ampkw)
-    axes[2].imshow(np.abs(cell2), **ampkw)
-    mappha = axes[3].imshow(cell3p, **phakw)
-    axes[4].imshow(cell1p, **phakw)
-    axes[5].imshow(cell2p, **phakw)
-    # Text labels
-    textkw = {"fontsize": 20,
-              "color": "white",
-              "horizontalalignment": "left",
-              "verticalalignment" : "top"
-              }
-    axes[0].text(4, 4, "focused backward", **textkw)
-    axes[1].text(4, 4, "original image", **textkw)
-    axes[2].text(4, 4, "focused forward", **textkw)
-    plt.tight_layout(rect=(.07, 0, 1, 1), w_pad=0.055)
-    # colorbar amplitude
-    pa = axes[0].get_position()
-    cbaxes = fig.add_axes([0.060 , pa.y0, .02, pa.y1-pa.y0])
-    cb = fig.colorbar(mapamp, cax=cbaxes,
-                        orientation="vertical",
-                        label="amplitude [a.u.]")
-    cb.ax.yaxis.set_ticks_position('left')
-    cb.ax.yaxis.set_label_position('left')
-    # colorbar phase
-    pa = axes[3].get_position()
-    cbaxes = fig.add_axes([0.060 , pa.y0, .02, pa.y1-pa.y0])
-    cb = fig.colorbar(mappha, cax=cbaxes,
-                        orientation="vertical",
-                        label="phase [rad]")
-    cb.ax.yaxis.set_ticks_position('left')
-    cb.ax.yaxis.set_label_position('left')
-    
-    DIR = dirname(abspath(__file__))
-    plt.savefig(DIR+"/refocus_cell.jpg", dpi=100)
-    
+# plots
+fig, axes = plt.subplots(2, 3, figsize=(8, 4.5))
+axes = axes.flatten()
+for ax in axes:
+    ax.xaxis.set_major_locator(plt.NullLocator())
+    ax.yaxis.set_major_locator(plt.NullLocator())
+
+# titles
+axes[0].set_title("focused backward")
+axes[1].set_title("original image")
+axes[2].set_title("focused forward")
+
+# data
+mapamp = axes[0].imshow(np.abs(cell3), **ampkw)
+axes[1].imshow(np.abs(cell1), **ampkw)
+axes[2].imshow(np.abs(cell2), **ampkw)
+mappha = axes[3].imshow(cell3p, **phakw)
+axes[4].imshow(cell1p, **phakw)
+axes[5].imshow(cell2p, **phakw)
+
+# colobars
+cbkwargs = {"fraction": 0.045}
+plt.colorbar(mapamp, ax=axes[0], label="amplitude [a.u.]", **cbkwargs)
+plt.colorbar(mapamp, ax=axes[1], label="amplitude [a.u.]", **cbkwargs)
+plt.colorbar(mapamp, ax=axes[2], label="amplitude [a.u.]", **cbkwargs)
+plt.colorbar(mappha, ax=axes[3], label="phase [rad]", **cbkwargs)
+plt.colorbar(mappha, ax=axes[4], label="phase [rad]", **cbkwargs)
+plt.colorbar(mappha, ax=axes[5], label="phase [rad]", **cbkwargs)
+
+plt.tight_layout()
+plt.show()

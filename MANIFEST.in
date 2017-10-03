@@ -2,6 +2,6 @@ include CHANGELOG
 include LICENSE
 include README.rst
 recursive-include examples *.py *.zip *.jpg
-recursive-include doc *.py *.md *.rst
+recursive-include docs *.py *.md *.rst *.txt
 recursive-include tests *.py *.md test_*.txt
 

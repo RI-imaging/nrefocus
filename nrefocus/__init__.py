@@ -6,7 +6,7 @@ wave in free space. The available propagators are the angular spectrum
 method (`helmholtz`) and the Fresnel approximation (`fresnel`). Both
 implementations are convolution-based. The angular spectrum method is
 suited for near-field propagation (numerical focusing) and yields
-better results than the convolution-based Fresnel approximation.
+better results than the Fresnel approximation.
 The single Fourer transform-based Fresnel propagation method which is
 suitable for far-field propagation is not implemented in this package.
 

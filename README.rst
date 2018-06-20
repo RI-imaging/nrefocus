@@ -42,7 +42,7 @@ Some functionalities of the module are tested with
    :target: https://pypi.python.org/pypi/nrefocus
 .. |Tests Status| image:: http://img.shields.io/travis/RI-imaging/nrefocus.svg?label=tests
    :target: https://travis-ci.org/RI-imaging/nrefocus
-.. |Coverage Status| image:: https://img.shields.io/coveralls/RI-imaging/nrefocus.svg
-   :target: https://coveralls.io/r/RI-imaging/nrefocus
+.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/RI-imaging/nrefocus/master.svg
+   :target: https://codecov.io/gh/RI-imaging/nrefocus
 .. |Docs Status| image:: https://readthedocs.org/projects/nrefocus/badge/?version=latest
    :target: https://readthedocs.org/projects/nrefocus/builds/

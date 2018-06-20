@@ -35,8 +35,8 @@ def spectral(data, lambd, *kwargs):
     #    data = np.array(data, dtype=np.complex)
     # fftplan = fftw3.Plan(data.copy(), None, nthreads = _ncores,
     #                     direction="forward", flags=_fftwflags)
-    #fftdata = np.zeros(data.shape, dtype=np.complex)
-    #fftplan.guru_execute_dft(data, fftdata)
+    # fftdata = np.zeros(data.shape, dtype=np.complex)
+    # fftplan.guru_execute_dft(data, fftdata)
     # fftw.destroy_plan(fftplan)
     fftdata = np.fft.fftn(data)
 

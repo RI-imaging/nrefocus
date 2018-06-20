@@ -9,7 +9,7 @@ The single Fourer transform-based Fresnel propagation method which is
 suitable for far-field propagation is not implemented in this package.
 
 
-Obtaining nrefocus 
+Obtaining nrefocus
 ------------------
 If you have Python and :py:mod:`numpy` installed, simply run
 
@@ -47,14 +47,14 @@ References
 # except ImportError:
 #    raise ImportError("`fftw3` not found. Please install `python-fftw`")
 # Number of cores to use for multiprocessing tasks
-#import multiprocessing as mp
-#_ncores = mp.cpu_count()
-# Flags for fftw3
-#_fftwflags = ["estimate"]
+# import multiprocessing as mp
+# _ncores = mp.cpu_count()
+#  Flags for fftw3
+# _fftwflags = ["estimate"]
 
 
-from ._autofocus import *
-from ._propagate import *
-from . import pad
+from ._autofocus import autofocus, autofocus_stack  # noqa: F401
+from ._propagate import refocus, refocus_stack  # noqa: F401
+from . import pad  # noqa: F401
 
-from ._version import version as __version__
+from ._version import version as __version__  # noqa: F401

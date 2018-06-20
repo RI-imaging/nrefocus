@@ -25,8 +25,8 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
         Wavelenth in pixels
     method : str
         Defines the method of propagation;
-        one of 
-        
+        one of
+
             - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
             - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
@@ -35,7 +35,7 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
     padding : bool
         perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
-        
+
         .. versionadded:: 0.1.4
 
     Returns
@@ -62,7 +62,7 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
     vardict["fftfield"] = np.fft.fftn(field)
 
     refoc = func(**vardict)
-    
+
     if padding:
         refoc = pad.pad_rem(refoc)
 
@@ -99,7 +99,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     padding : bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
-        
+
         .. versionadded:: 0.1.4
 
     Returns
@@ -140,7 +140,6 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
             args.append(val)
         stackargs.append(args[::-1])
 
-
     p = mp.Pool(num_cpus)
     result = p.map_async(_refocus_wrapper, stackargs).get()
     p.close()
@@ -175,7 +174,7 @@ def fft_propagate(fftfield, d, nm, res, method="helmholtz",
         Wavelength in pixels
     method : str
         Defines the method of propagation;
-        one of 
+        one of
 
             - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
             - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
@@ -255,7 +254,7 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
         fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
         # exp(i*d*(km-kx²/(2*km))
-        #fstemp = np.exp(-1j * d * (kx**2/(2*km)))
+        # fstemp = np.exp(-1j * d * (kx**2/(2*km)))
         fstemp = np.exp(-1j * d * (kx**2/(2*km)))
     else:
         raise ValueError("Unknown method: {}".format(method))
@@ -314,11 +313,11 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
         fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
         # exp(i*d*(km-(kx²+ky²)/(2*km))
-        #fstemp = np.exp(-1j * d * (kx**2+ky**2)/(2*km))
+        # fstemp = np.exp(-1j * d * (kx**2+ky**2)/(2*km))
         fstemp = np.exp(-1j * d * (kx**2 + ky**2)/(2*km))
     else:
         raise ValueError("Unknown method: {}".format(method))
-    #fstemp[np.where(np.isnan(fstemp))] = 0
+    # fstemp[np.where(np.isnan(fstemp))] = 0
     # Also subtract incoming plane wave. We are only considering
     # the scattered field here.
     if ret_fft:

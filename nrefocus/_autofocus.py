@@ -60,11 +60,11 @@ def autofocus(field, nm, res, ival, roi=None,
     the computed gradients.
     """
     if metric == "average gradient":
-        metric_func = lambda x: metrics.average_gradient(np.abs(x))
+        def metric_func(x): return metrics.average_gradient(np.abs(x))
     elif metric == "rms contrast":
-        metric_func = lambda x: -metrics.contrast_rms(np.angle(x))
+        def metric_func(x): return -metrics.contrast_rms(np.angle(x))
     elif metric == "spectrum":
-        metric_func = lambda x: metrics.spectral(np.abs(x), res)
+        def metric_func(x): return metrics.spectral(np.abs(x), res)
     else:
         raise ValueError("No such metric: {}".format(metric))
 
@@ -105,7 +105,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     padding : bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
-        
+
         .. versionchanged:: 0.1.4
            improved padding value and padding location
     ret_dopt : bool
@@ -143,7 +143,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     p.close()
     p.terminate()
     p.join()
-    #result = list()
+    # result = []
     # for arg in stackargs:
     #    result += _autofocus_wrapper(arg)
 
@@ -162,7 +162,6 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         newstack = refocus_stack(fieldstack, davg, nm, res,
                                  num_cpus=num_cpus, copy=copy,
                                  padding=padding)
-
 
     ret_list = [newstack]
     if ret_ds:
@@ -205,7 +204,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
     padding : bool
         perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
-        
+
         .. versionchanged:: 0.1.4
            improved padding value and padding location
     """
@@ -222,7 +221,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
             roi = (0, 0, field.shape[0], field.shape[1])
         else:
             roi = (0, field.shape[0])
-    
+
     roi = 1*np.array(roi)
 
     if padding:
@@ -232,7 +231,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
     if ival[0] > ival[1]:
         ival = (ival[1], ival[0])
     # set coarse interval
-    #coarse_acc = int(np.ceil(ival[1]-ival[0]))/100
+    # coarse_acc = int(np.ceil(ival[1]-ival[0]))/100
     N = 100 / coarse_acc
     zc = np.linspace(ival[0], ival[1], N, endpoint=True)
 
@@ -246,7 +245,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
     gradc = np.zeros(zc.shape)
     for i in range(len(zc)):
         d = zc[i]
-        #fsp = propfunc(fftfield, d, nm, res, fftplan=fftplan)
+        # fsp = propfunc(fftfield, d, nm, res, fftplan=fftplan)
         fsp = propfunc(fftfield, d, nm, res)
         if Fshape == 2:
             gradc[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
@@ -261,7 +260,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
         zc += zc[1] - zc[0]
         minid -= 1
     zf = 1*zc
-    gradf = 1* gradc
+    gradf = 1 * gradc
 
     numfine = 10
     mingrad = gradc[minid]

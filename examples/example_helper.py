@@ -3,6 +3,7 @@ import zipfile
 
 import numpy as np
 
+
 def load_cell(fname="HL60_field.zip"):
     "Load zip file and return complex field"
     here = op.dirname(op.abspath(__file__))

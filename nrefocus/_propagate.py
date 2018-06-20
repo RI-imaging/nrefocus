@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import division, print_function
-
 import multiprocessing as mp
 import numpy as np
 
@@ -14,7 +10,7 @@ _cpu_count = mp.cpu_count()
 
 
 def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
-    """ Refocus a 1D or 2D field
+    """Refocus a 1D or 2D field
 
 
     Parameters
@@ -75,7 +71,7 @@ def refocus(field, d, nm, res, method="helmholtz", num_cpus=1, padding=True):
 
 def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
                   num_cpus=_cpu_count, copy=True, padding=True):
-    """ Refocus a stack of 1D or 2D fields
+    """Refocus a stack of 1D or 2D fields
 
 
     Parameters
@@ -164,7 +160,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
 
 def fft_propagate(fftfield, d, nm, res, method="helmholtz",
                   ret_fft=False):
-    """ Propagates a 1D or 2D Fourier transformed field
+    """Propagates a 1D or 2D Fourier transformed field
 
 
     Parameters
@@ -214,7 +210,7 @@ def fft_propagate(fftfield, d, nm, res, method="helmholtz",
 
 def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
                      ret_fft=False):
-    """ Propagate a 1D  Fourier transformed field in 2D
+    """Propagate a 1D  Fourier transformed field in 2D
 
 
     Parameters
@@ -272,7 +268,7 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
 
 def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
                      ret_fft=False):
-    """ Propagate a 2D  Fourier transformed field in 3D
+    """Propagate a 2D  Fourier transformed field in 3D
 
 
     Parameters

@@ -5,4 +5,4 @@ recursive-include examples *.py *.zip *.jpg
 recursive-include docs *.py *.md *.rst *.txt
 recursive-include tests *.py *.md test_*.txt
 prune docs/_build
-
+exclude docs/_version_save.py

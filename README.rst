@@ -10,7 +10,7 @@ quantitative phase imaging techniques in modern microscopy.
 Documentation
 -------------
 
-The documentation is available is available on `readthedocs.io <https://nrefocus.readthedocs.io/en/stable/>`__.
+The documentation is available is available at `nrefocus.readthedocs.io <https://nrefocus.readthedocs.io/en/stable/>`__.
 
 
 Installation

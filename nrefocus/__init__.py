@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 This package provides methods for numerical propagation of a complex
 wave in free space. The available propagators are the angular spectrum

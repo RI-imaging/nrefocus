@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """2D Refocusing of an HL60 cell
 
 The data show a live HL60 cell imaged with quadriwave lateral shearing

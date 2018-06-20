@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 
 .. versionadded:: 0.1.4
@@ -171,7 +169,6 @@ def pad_rem(pv, size=None):
     elif not hasattr(size, "__len__"):
         size = [size]
 
-
     assert len(pv.shape) in [1,2], "Only 1D and 2D arrays!"
     assert len(pv.shape) == len(size), "`size` must have same length as `av.shape`!"
 
@@ -179,6 +176,4 @@ def pad_rem(pv, size=None):
         return pv[:size[0], :size[1]]
     else:
         return pv[:size[0]]
-            
-            
             

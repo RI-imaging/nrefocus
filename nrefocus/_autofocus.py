@@ -1,10 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import division, print_function
-
 import multiprocessing as mp
 import numpy as np
-
 
 from . import metrics
 from . import pad
@@ -24,7 +19,7 @@ _cpu_count = mp.cpu_count()
 def autofocus(field, nm, res, ival, roi=None,
               metric="average gradient", padding=True,
               ret_d=False, ret_grad=False, num_cpus=1):
-    """ Numerical autofocusing of a field using the Helmholtz equation.
+    """Numerical autofocusing of a field using the Helmholtz equation.
 
 
     Parameters
@@ -92,7 +87,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
                     metric="average gradient", padding=True,
                     same_dist=False, ret_ds=False, ret_grads=False,
                     num_cpus=_cpu_count, copy=True):
-    """ Numerical autofocusing of a stack using the Helmholtz equation.
+    """Numerical autofocusing of a stack using the Helmholtz equation.
 
 
     Parameters
@@ -184,7 +179,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
 def minimize_metric(field, metric_func, nm, res, ival, roi=None,
                     coarse_acc=1, fine_acc=.005,
                     return_gradient=True, padding=True):
-    """ Find the focus by minimizing the `metric` of an image
+    """Find the focus by minimizing the `metric` of an image
 
     Parameters
     ----------
@@ -304,6 +299,6 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
 
 
 def _autofocus_wrapper(args):
-    """Just calls autofocus with *args. Needed for multiprocessing pool.
+    """Calls autofocus with *args. Needed for multiprocessing pool.
     """
     return autofocus(*args)

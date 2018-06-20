@@ -1,5 +1,6 @@
 0.2.0
  - Drop support for Python 2 (#8)
+ - Code cleanup
 0.1.8
  - Include docs in sdist
 0.1.7

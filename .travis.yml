@@ -32,3 +32,14 @@ script:
        flake8 examples;
        flake8 tests;
   fi;
+deploy:
+  provider: pypi
+  user: "ci_qpi"
+  password:
+    secure: "ZG3E94C+IQI6CoKCpC/XV45B3k/dZC+WjSXcQz6YkNQKU9q5giaBp9I/IstD+ci/D2pqRgQj4qJuT9DXDGv8fGwE8iAp1kBfdI1OAxv3516cJiU3tAuwFQ8rvTHQHCpj+eK7qYnzH6PoCHzx5BnCb/SReD6fIBR6kUkBlfOeYb0="
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
+  skip_cleanup: true
+  skip_existing: true
+

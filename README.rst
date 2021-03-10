@@ -15,26 +15,21 @@ The documentation is available is available at `nrefocus.readthedocs.io <https:/
 
 Installation
 ------------
-Install from the Python package index
-
-::
+Install from the Python package index::
 
     pip install nrefocus
 
-or download the package and run
-
-::
+or download the package and run::
 
     python setup.py install
 
 
 Testing
 -------
-Some functionalities of the module are tested with
+Some functionalities of the module are tested with::
 
-::
-
-    python setup.py test
+    pip install pytest
+    pytest tests
 
 
 

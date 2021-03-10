@@ -61,3 +61,5 @@ _version_save.py
 .env
 .eggs
 .pytest_cache
+
+.idea

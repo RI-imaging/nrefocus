@@ -32,7 +32,7 @@ sys.path.insert(0, pdir)
 sys.path.append(op.abspath('extensions'))
 
 exec(open(op.join(pdir, "nrefocus/_version.py")).read())
-release = version #@UndefinedVariable
+release = version  # @UndefinedVariable
 
 
 # Mock all dependencies
@@ -65,13 +65,13 @@ rst_prolog = """
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-#extensions = [
+# extensions = [
 #    'sphinx.ext.autodoc',
 #    'sphinx.ext.doctest',
 #    'sphinx.ext.coverage',
 #    'sphinx.ext.pngmath',
 #    'sphinx.ext.viewcode',
-#]
+# ]
 
 
 extensions = ['sphinx.ext.intersphinx',
@@ -82,7 +82,6 @@ extensions = ['sphinx.ext.intersphinx',
               'sphinx.ext.viewcode',
               'fancy_include',
               ]
-
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -231,22 +230,22 @@ htmlhelp_basename = projectname+'doc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', projectname+'.tex', projectname+' Documentation',
-   authors, 'manual'),
+    ('index', projectname+'.tex', projectname+' Documentation',
+     authors, 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -289,10 +288,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', projectname, projectname+u' Documentation',
-   authors, projectname,
-   projectdescription,
-   'Numeric'),
+    ('index', projectname, projectname+u' Documentation',
+     authors, projectname,
+     projectdescription,
+     'Numeric'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -315,4 +314,3 @@ intersphinx_mapping = {"python": ('https://docs.python.org/', None),
                        "numpy": ('http://docs.scipy.org/doc/numpy', None),
                        "scipy": ('https://docs.scipy.org/doc/scipy/reference/', None),
                        }
-

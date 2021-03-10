@@ -24,18 +24,18 @@ def autofocus(field, nm, res, ival, roi=None,
 
     Parameters
     ----------
-    field : 1d or 2d ndarray
+    field: 1d or 2d ndarray
         Electric field is BG-Corrected, i.e. field = EX/BEx
-    nm : float
+    nm: float
         Refractive index of medium.
-    res : float
+    res: float
         Size of wavelength in pixels.
-    ival : tuple of floats
+    ival: tuple of floats
         Approximate interval to search for optimal focus in px.
-    roi : rectangular region of interest (x1, y1, x2, y2)
+    roi: rectangular region of interest (x1, y1, x2, y2)
         Region of interest of `field` for which the metric will be
         minimized. If not given, the entire `field` will be used.
-    metric : str
+    metric: str
         - "average gradient" : average gradient metric of amplitude
         - "rms contrast" : RMS contrast of phase data
         - "spectrum" : sum of filtered Fourier coefficients
@@ -45,11 +45,11 @@ def autofocus(field, nm, res, ival, roi=None,
 
         .. versionchanged:: 0.1.4
            improved padding value and padding location
-    red_d : bool
+    ret_d: bool
         Return the autofocusing distance in pixels. Defaults to False.
-    red_grad : bool
+    ret_grad: bool
         Return the computed gradients as a list.
-    num_cpus : int
+    num_cpus: int
         Not implemented.
 
 
@@ -92,34 +92,34 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
 
     Parameters
     ----------
-    fieldstack : 2d or 3d ndarray
+    fieldstack: 2d or 3d ndarray
         Electric field is BG-Corrected, i.e. Field = EX/BEx
-    nm : float
+    nm: float
         Refractive index of medium.
-    res : float
+    res: float
         Size of wavelength in pixels.
-    ival : tuple of floats
+    ival: tuple of floats
         Approximate interval to search for optimal focus in px.
-    metric : str
+    metric: str
         see `autofocus_field`.
-    padding : bool
+    padding: bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
 
         .. versionchanged:: 0.1.4
            improved padding value and padding location
-    ret_dopt : bool
-        Return optimized distance and gradient plotting data.
-    same_dist : bool
+    same_dist: bool
         Refocus entire sinogram with one distance.
-    red_ds : bool
+    ret_ds: bool
         Return the autofocusing distances in pixels. Defaults to False.
         If sam_dist is True, still returns autofocusing distances
         of first pass. The used refocusing distance is the
         average.
-    red_grads : bool
+    ret_grads: bool
         Return the computed gradients as a list.
-    copy : bool
+    num_cpus: int
+        Number of CPUs to use
+    copy: bool
         If False, overwrites input array.
 
 
@@ -135,7 +135,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     # setup arguments
     stackargs = list()
     for s in range(M):
-        stackargs.append([fieldstack[s].copy(copy), nm, res, ival,
+        stackargs.append([np.array(fieldstack[s], copy=copy), nm, res, ival,
                           roi, metric, padding, True, True, 1])
     # perform first pass
     p = mp.Pool(num_cpus)
@@ -232,7 +232,7 @@ def minimize_metric(field, metric_func, nm, res, ival, roi=None,
         ival = (ival[1], ival[0])
     # set coarse interval
     # coarse_acc = int(np.ceil(ival[1]-ival[0]))/100
-    N = 100 / coarse_acc
+    N = int(100 / coarse_acc)
     zc = np.linspace(ival[0], ival[1], N, endpoint=True)
 
     # compute fft of field

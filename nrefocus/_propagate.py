@@ -92,7 +92,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
             - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
             - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
 
-    num_cpus : str
+    num_cpus : int
         Defines the number of CPUs to be used for refocusing.
     copy : bool
         If False, overwrites input stack.

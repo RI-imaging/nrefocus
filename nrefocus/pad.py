@@ -18,9 +18,9 @@ def _get_pad_left_right(small, large):
 
     Parameters
     ----------
-    small : int
+    small: int
         Old size of original 1D array
-    large : int
+    large: int
         New size off padded 1D array
 
     Returns
@@ -54,19 +54,19 @@ def pad_add(av, size=None, stlen=10):
 
     Parameters
     ----------
-    av : complex 1D or 2D ndarray
+    av: complex 1D or 2D ndarray
         The array that will be padded.
-    size : int or tuple of length 1 (1D) or tuple of length 2 (2D), optional
+    size: int or tuple of length 1 (1D) or tuple of length 2 (2D), optional
         The final size of the padded array. Defaults to double the size
         of the input array.
-    stlen : int, optional
+    stlen: int, optional
         The thickness of the frame within `av` that will be used to
         compute an average value for padding.
 
 
     Returns
     -------
-    pv : complex 1D or 2D ndarray
+    pv: complex 1D or 2D ndarray
         Padded array `av` with pads appended to right and bottom.
     """
     if size is None:
@@ -87,8 +87,7 @@ def pad_add(av, size=None, stlen=10):
 
 
 def _pad_add_1d(av, size, stlen):
-    """ 2D component of `pad_add`
-    """
+    """1D component of `pad_add`"""
     assert len(size) == 1
 
     padx = _get_pad_left_right(av.shape[0], size[0])
@@ -115,8 +114,7 @@ def _pad_add_1d(av, size, stlen):
 
 
 def _pad_add_2d(av, size, stlen):
-    """ 2D component of `pad_add`
-    """
+    """2D component of `pad_add`"""
     assert len(size) == 2
 
     padx = _get_pad_left_right(av.shape[0], size[0])
@@ -145,23 +143,23 @@ def _pad_add_2d(av, size, stlen):
 
 
 def pad_rem(pv, size=None):
-    """ Removes linear padding from array
+    """Removes linear padding from array
 
     This is a convenience function that does the opposite
     of `pad_add`.
 
     Parameters
     ----------
-    pv : 1D or 2D ndarray
+    pv: 1D or 2D ndarray
         The array from which the padding will be removed.
-    size : tuple of length 1 (1D) or 2 (2D), optional
+    size: tuple of length 1 (1D) or 2 (2D), optional
         The final size of the un-padded array. Defaults to half the size
         of the input array.
 
 
     Returns
     -------
-    pv : 1D or 2D ndarray
+    pv: 1D or 2D ndarray
         Padded array `av` with pads appended to right and bottom.
     """
     if size is None:

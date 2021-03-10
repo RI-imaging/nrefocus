@@ -1,4 +1,6 @@
 0.2.1
+ - fix: fix several minor bugs (deprecations?) that caused the
+   tests to faile
  - ci: migrate to GitHub Actions
  - setup: setup.py test is deprecated
  - docs: refurbish documentation

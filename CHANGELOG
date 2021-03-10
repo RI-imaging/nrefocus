@@ -1,5 +1,5 @@
 0.2.1
- - ci: automated deployment with travis-ci
+ - ci: migrate to GitHub Actions
 0.2.0
  - Drop support for Python 2 (#8)
  - Code cleanup

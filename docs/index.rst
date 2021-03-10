@@ -13,6 +13,7 @@ This is the documentaion of nrefocus version |release|.
    theory
    code_reference
    examples
+   sec_z_bib
 
 Indices and tables
 ==================

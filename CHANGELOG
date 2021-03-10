@@ -1,6 +1,7 @@
 0.2.1
  - ci: migrate to GitHub Actions
  - setup: setup.py test is deprecated
+ - docs: refurbish documentation
 0.2.0
  - Drop support for Python 2 (#8)
  - Code cleanup

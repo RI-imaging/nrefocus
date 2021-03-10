@@ -2,7 +2,8 @@
 Theory
 ======
 
-The derivations given here are treated in more detail in the relevant literature, e.g. [1]_ and [2]_.
+The derivations given here are treated in more detail in the relevant
+literature, e.g. :cite:`Saleh_1991` and :cite:`Goodman_2005`.
 
 Optical transfer function
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,15 +129,3 @@ As a result, the transfer functions change to
 .. math::
     \mathcal{H}_\text{norm}^\text{Helmholtz} &= e^{ik_\mathrm{m}(M-1)d} \\
     \mathcal{H}_\text{norm}^\text{Fresnel} &= e^{-\frac{id(k_\mathrm{x}^2+k_\mathrm{y}^2)}{2 k_\mathrm{m}}}.
-
-
-References
-~~~~~~~~~~
-.. [1] Bahaa E. A. Saleh, Malvin Carl Teich, *Fundamentals of Photonics*,  
-       Chapter 4, John Wiley & Sons, Inc., **2001** `DOI 10.1002/0471213748 <http://dx.doi.org/10.1002/0471213748>`_
-
-.. [2] Joseph W. Goodman, *Introduction to Fourier Optics*  3rd ed.,
-  	   Roberts & Company Publishers, **2005** 
-  	   `Publisher <http://www.roberts-publishers.com/authors/goodman-joseph-w/introduction-to-fourier-optics-third-edition.html>`_
-
-	

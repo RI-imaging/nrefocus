@@ -5,8 +5,7 @@ Code reference
 Refocus 1D/2D fields
 ::::::::::::::::::::
 .. automodule:: nrefocus._propagate
-.. currentmodule:: nrefocus
-.. autosummary:: 
+.. autosummary::
     fft_propagate
     refocus
     refocus_stack

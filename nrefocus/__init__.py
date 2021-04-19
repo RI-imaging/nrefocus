@@ -41,7 +41,7 @@ References
        Available at https://pypi.python.org/pypi/nrefocus/.
 
 """
-
+# flake8: noqa: F401
 # try:
 #    import fftw3
 # except ImportError:
@@ -53,8 +53,9 @@ References
 # _fftwflags = ["estimate"]
 
 
-from ._autofocus import autofocus, autofocus_stack  # noqa: F401
-from ._propagate import refocus, refocus_stack  # noqa: F401
-from . import pad  # noqa: F401
+from .autof import autofocus, autofocus_stack
+from .propg import refocus, refocus_stack
+from . import pad
+from .iface.rf_numpy import RefocusNumpy
 
 from ._version import version as __version__  # noqa: F401

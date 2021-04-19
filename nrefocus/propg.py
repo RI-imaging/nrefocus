@@ -243,6 +243,7 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
     km = (2 * np.pi * nm) / res
     kx = np.fft.fftfreq(len(fftfield)) * 2 * np.pi
 
+    print(nm, res, d)
     # free space propagator is
     if method == "helmholtz":
         # exp(i*sqrt(km²-kx²)*d)

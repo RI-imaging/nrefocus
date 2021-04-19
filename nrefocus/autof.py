@@ -3,7 +3,7 @@ import numpy as np
 
 from . import metrics
 from . import pad
-from ._propagate import fft_propagate, refocus_stack
+from .propg import fft_propagate, refocus_stack
 
 
 __all__ = [

@@ -1,3 +1,6 @@
+0.3.0
+ - feat: Introduce nrefocus.RefocusNumpy interface class for
+   user-convenience and efficiency
 0.2.1
  - fix: fix several minor bugs (deprecations?) that caused the
    tests to faile

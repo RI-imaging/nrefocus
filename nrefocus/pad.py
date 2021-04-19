@@ -10,7 +10,7 @@ import numpy as np
 
 
 def _get_pad_left_right(small, large):
-    """ Compute left and right padding values.
+    """Compute left and right padding values.
 
     Here we use the convention that if the padding
     size is odd, we pad the odd part to the right

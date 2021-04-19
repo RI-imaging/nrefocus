@@ -23,7 +23,7 @@ class RefocusNumpy(Refocus):
         """
         if padding:
             field = pad.pad_add(field)
-        return np.fft.fftn(field)
+        return np.fft.fft2(field)
 
     def propagate(self, distance, kernel="helmholtz"):
         fft_kernel = self.get_kernel(distance=distance, kernel=kernel)

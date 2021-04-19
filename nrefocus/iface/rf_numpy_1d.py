@@ -1,17 +1,17 @@
-from abc import ABC, abstractmethod
-
 import numpy as np
 
+from .. import pad
 
-class Refocus(ABC):
+
+class RefocusNumpy1D:
     def __init__(self, field, wavelength, pixel_size, medium_index=1.3333,
                  distance=0, padding=True):
-        """Base class for refocusing of 2D field data
+        """Refocus a 1D field with numpy
 
         Parameters
         ----------
-        field: 2d complex-valued ndarray
-            Input field to be refocused
+        field: 1d complex-valued ndarray
+            Input 1D field to be refocused
         wavelength: float
             Wavelength of the used light [m]
         pixel_size: float
@@ -24,62 +24,42 @@ class Refocus(ABC):
         padding: bool
             Whether or not to perform zero-padding
         """
-        super(Refocus, self).__init__()
         self.wavelength = wavelength
         self.pixel_size = pixel_size
         self.medium_index = medium_index
         self.distance = distance
         self.padding = padding
-        self.fft_field0 = self._init_fft(field, padding)
-
-    @abstractmethod
-    def _init_fft(self, field, padding):
-        """Initialize Fourier transform for propagation
-
-        This is where you would compute the initial Fourier transform.
-        E.g. for FFTW, you would do planning here.
-
-        Parameters
-        ----------
-        field: 2d complex-valued ndarray
-            Input field to be refocused
-        padding: bool
-            Whether or not to perform zero-padding
-
-        Returns
-        -------
-        fft_field0: 2d complex-valued ndarray
-            Fourier transform the the initial field
-
-        Notes
-        -----
-        Any subclass should perform padding with
-        :func:`nrefocus.pad.padd_add` during initialization.
-        """
+        if padding:
+            field = pad.pad_add(field)
+        self.fft_field0 = np.fft.fft(field)
 
     def get_kernel(self, distance, kernel="helmholtz"):
+        """Return the kernel for a 1D propagation"""
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
         twopi = 2 * np.pi
 
         km = twopi * nm / res
-        kx = (np.fft.fftfreq(self.fft_field0.shape[0]) * twopi).reshape(-1, 1)
-        ky = (np.fft.fftfreq(self.fft_field0.shape[1]) * twopi).reshape(1, -1)
+        kx = np.fft.fftfreq(len(self.fft_field0)) * 2 * np.pi
+
+        # free space propagator is
         if kernel == "helmholtz":
-            # exp(i*sqrt(km²-kx²-ky²)*d)
-            root_km = km ** 2 - kx ** 2 - ky ** 2
+            # exp(i*sqrt(km²-kx²)*d)
+            # Also subtract incoming plane wave. We are only considering
+            # the scattered field here.
+            root_km = km ** 2 - kx ** 2
             rt0 = (root_km > 0)
             # multiply by rt0 (filter in Fourier space)
             fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
         elif kernel == "fresnel":
-            # exp(i*d*(km-(kx²+ky²)/(2*km))
-            fstemp = np.exp(-1j * d * (kx ** 2 + ky ** 2) / (2 * km))
+            # exp(i*d*(km-kx²/(2*km))
+            # fstemp = np.exp(-1j * d * (kx**2/(2*km)))
+            fstemp = np.exp(-1j * d * (kx ** 2 / (2 * km)))
         else:
             raise KeyError(f"Unknown propagation kernel: '{kernel}'")
         return fstemp
 
-    @abstractmethod
     def propagate(self, distance, kernel):
         """Propagate the initial field to a certain distance
 
@@ -95,11 +75,11 @@ class Refocus(ABC):
 
         Returns
         -------
-        refocused_field: 2d ndarray
-            Initial field refocused at `distance`
-
-        Notes
-        -----
-        Any subclass should perform padding with
-        :func:`nrefocus.pad.pad_rem` during initialization.
+        refocused_field: 1d ndarray
+            Initial 1D field refocused at `distance`
         """
+        fft_kernel = self.get_kernel(distance=distance, kernel=kernel)
+        refoc = np.fft.ifft(self.fft_field0 * fft_kernel)
+        if self.padding:
+            refoc = pad.pad_rem(refoc)
+        return refoc

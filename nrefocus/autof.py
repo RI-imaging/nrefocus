@@ -21,7 +21,6 @@ def autofocus(field, nm, res, ival, roi=None,
               ret_d=False, ret_grad=False, num_cpus=1):
     """Numerical autofocusing of a field using the Helmholtz equation.
 
-
     Parameters
     ----------
     field: 1d or 2d ndarray
@@ -106,7 +105,6 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
                     num_cpus=_cpu_count, copy=True):
     """Numerical autofocusing of a stack using the Helmholtz equation.
 
-
     Parameters
     ----------
     fieldstack: 2d or 3d ndarray
@@ -117,6 +115,9 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         Size of wavelength in pixels.
     ival: tuple of floats
         Approximate interval to search for optimal focus in px.
+    roi: rectangular region of interest (x1, y1, x2, y2)
+        Region of interest of `field` for which the metric will be
+        minimized. If not given, the entire `field` will be used.
     metric: str
         see `autofocus_field`.
     padding: bool

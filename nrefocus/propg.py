@@ -13,7 +13,6 @@ _cpu_count = mp.cpu_count()
 def refocus(field, d, nm, res, method="helmholtz", padding=True):
     """Refocus a 1D or 2D field
 
-
     Parameters
     ----------
     field : 1d or 2d array

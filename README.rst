@@ -10,7 +10,8 @@ quantitative phase imaging techniques in modern microscopy.
 Documentation
 -------------
 
-The documentation is available is available at `nrefocus.readthedocs.io <https://nrefocus.readthedocs.io/en/stable/>`__.
+The documentation is available is available at
+`nrefocus.readthedocs.io <https://nrefocus.readthedocs.io/en/stable/>`__.
 
 
 Installation
@@ -19,14 +20,14 @@ Install from the Python package index::
 
     pip install nrefocus
 
-or download the package and run::
+or clone the repository and run::
 
-    python setup.py install
+    pip install -e .
 
 
 Testing
 -------
-Some functionalities of the module are tested with::
+Testing is done with pytest::
 
     pip install pytest
     pytest tests

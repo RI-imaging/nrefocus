@@ -15,9 +15,10 @@ def test_2d_refocus1():
                                  pixel_size=pixel_size,
                                  medium_index=1.333,
                                  distance=0,
+                                 kernel="helmholtz",
                                  padding=False)
 
-    refocused = rf.propagate(distance=42.13*pixel_size, kernel="helmholtz")
+    refocused = rf.propagate(distance=42.13*pixel_size)
     reference = np.loadtxt(data_path / "test_1d_refocus1.txt")
     assert np.allclose(np.array(refocused).flatten().view(float), reference)
 

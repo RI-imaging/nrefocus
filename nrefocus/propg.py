@@ -57,9 +57,10 @@ def refocus(field, d, nm, res, method="helmholtz", padding=True):
                pixel_size=pixel_size,
                medium_index=nm,
                distance=0,
+               kernel=method,
                padding=padding
                )
-    refoc = rf.propagate(distance=d*pixel_size, kernel=method)
+    refoc = rf.propagate(distance=d*pixel_size)
 
     return refoc
 

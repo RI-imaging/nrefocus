@@ -1,16 +1,15 @@
 import multiprocessing as mp
 import numpy as np
 
+from . import iface
 from . import metrics
-from . import pad
-from .legacy import fft_propagate
+from .minimizers import minimize_legacy
 from .propg import refocus_stack
 
 
 __all__ = [
     "autofocus",
     "autofocus_stack",
-    "minimize_metric",
 ]
 
 
@@ -60,17 +59,34 @@ def autofocus(field, nm, res, ival, roi=None,
     The focused field and optionally, the optimal focusing distance and
     the computed gradients.
     """
-    if metric == "average gradient":
-        def metric_func(x): return metrics.average_gradient(np.abs(x))
-    elif metric == "rms contrast":
-        def metric_func(x): return -metrics.contrast_rms(np.angle(x))
-    elif metric == "spectrum":
-        def metric_func(x): return metrics.spectral(np.abs(x), res)
+    fshape = len(field.shape)
+    if fshape == 1:
+        # 1D field
+        rfcls = iface.RefocusNumpy1D
+    elif fshape == 2:
+        # 2D field
+        rfcls = iface.RefocusNumpy
     else:
-        raise ValueError("No such metric: {}".format(metric))
+        raise AssertionError("Dimension of `field` must be 1 or 2.")
 
-    field, d, grad = minimize_metric(field, metric_func, nm, res, ival,
-                                     roi=roi, padding=padding)
+    metric_func = metrics.METRICS[metric]
+
+    # use a made-up pixel size so we can use the new `Refocus` interface
+    pixel_size = 1e-6
+    rf = rfcls(field=field,
+               wavelength=res*pixel_size,
+               pixel_size=pixel_size,
+               medium_index=nm,
+               distance=0,
+               kernel="helmholtz",
+               padding=padding
+               )
+
+    field, d, grad = minimize_legacy(rf=rf,
+                                     metric_func=metric_func,
+                                     interval=ival,
+                                     roi=roi,
+                                     padding=padding)
 
     ret_list = [field]
     if ret_d:
@@ -174,128 +190,6 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         return ret_list[0]
     else:
         return tuple(ret_list)
-
-
-def minimize_metric(field, metric_func, nm, res, ival, roi=None,
-                    coarse_acc=1, fine_acc=.005,
-                    return_gradient=True, padding=True):
-    """Find the focus by minimizing the `metric` of an image
-
-    Parameters
-    ----------
-    field : 2d array
-        electric field
-    metric_func : callable
-        some metric to be minimized
-    ival : tuple of floats
-        (minimum, maximum) of interval to search in pixels
-    nm : float
-        RI of medium
-    res : float
-        wavelength in pixels
-    roi : rectangular region of interest (x1, y1, x2, y2)
-        Region of interest of `field` for which the metric will be
-        minimized. If not given, the entire `field` will be used.
-    coarse_acc : float
-        accuracy for determination of global minimum in pixels
-    fine_acc : float
-        accuracy for fine localization percentage of gradient change
-    return_gradient:
-        return x and y values of computed gradient
-    padding : bool
-        perform padding with linear ramp from edge to average
-        to reduce ringing artifacts.
-
-        .. versionchanged:: 0.1.4
-           improved padding value and padding location
-    """
-    if roi is not None:
-        assert len(roi) == len(field.shape) * \
-            2, "ROI must match field dimension"
-
-    initshape = field.shape
-    Fshape = len(initshape)
-    propfunc = fft_propagate
-
-    if roi is None:
-        if Fshape == 2:
-            roi = (0, 0, field.shape[0], field.shape[1])
-        else:
-            roi = (0, field.shape[0])
-
-    roi = 1*np.array(roi)
-
-    if padding:
-        # Pad with correct complex number
-        field = pad.pad_add(field)
-
-    if ival[0] > ival[1]:
-        ival = (ival[1], ival[0])
-    # set coarse interval
-    # coarse_acc = int(np.ceil(ival[1]-ival[0]))/100
-    N = int(100 / coarse_acc)
-    zc = np.linspace(ival[0], ival[1], N, endpoint=True)
-
-    # compute fft of field
-    fftfield = np.fft.fftn(field)
-
-    # fftplan = fftw3.Plan(fftfield.copy(), None, nthreads = _ncores,
-    #                     direction="backward", flags=_fftwflags)
-
-    # initiate gradient vector
-    gradc = np.zeros(zc.shape)
-    for i in range(len(zc)):
-        d = zc[i]
-        # fsp = propfunc(fftfield, d, nm, res, fftplan=fftplan)
-        fsp = propfunc(fftfield, d, nm, res)
-        if Fshape == 2:
-            gradc[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
-        else:
-            gradc[i] = metric_func(fsp[roi[0]:roi[1]])
-
-    minid = np.argmin(gradc)
-    if minid == 0:
-        zc -= zc[1] - zc[0]
-        minid += 1
-    if minid == len(zc) - 1:
-        zc += zc[1] - zc[0]
-        minid -= 1
-    zf = 1*zc
-    gradf = 1 * gradc
-
-    numfine = 10
-    mingrad = gradc[minid]
-
-    while True:
-        gradf = np.zeros(numfine)
-        ival = (zf[minid - 1], zf[minid + 1])
-        zf = np.linspace(ival[0], ival[1], numfine)
-        for i in range(len(zf)):
-            d = zf[i]
-            fsp = propfunc(fftfield, d, nm, res)
-            if Fshape == 2:
-                gradf[i] = metric_func(fsp[roi[0]:roi[2], roi[1]:roi[3]])
-            else:
-                gradf[i] = metric_func(fsp[roi[0]:roi[1]])
-        minid = np.argmin(gradf)
-        if minid == 0:
-            zf -= zf[1] - zf[0]
-            minid += 1
-        if minid == len(zf) - 1:
-            zf += zf[1] - zf[0]
-            minid -= 1
-        if abs(mingrad - gradf[minid]) / 100 < fine_acc:
-            break
-
-    minid = np.argmin(gradf)
-    fsp = propfunc(fftfield, zf[minid], nm, res)
-
-    if padding:
-        fsp = pad.pad_rem(fsp)
-
-    if return_gradient:
-        return fsp, zf[minid], [(zc, gradc), (zf, gradf)]
-    return fsp, zf[minid]
 
 
 def _autofocus_wrapper(args):

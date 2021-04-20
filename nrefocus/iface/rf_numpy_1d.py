@@ -8,7 +8,7 @@ from .base import Refocus
 class RefocusNumpy1D(Refocus):
     def __init__(self, field, wavelength, pixel_size, medium_index=1.3333,
                  distance=0, kernel="helmholtz", padding=True):
-        """Refocus a 1D field with numpy
+        r"""Refocus a 1D field with numpy
 
         Parameters
         ----------
@@ -27,8 +27,10 @@ class RefocusNumpy1D(Refocus):
             Propagation kernel, one of
 
             - "helmholtz": the optical transfer function
-              `exp(i sqrt(km²-kx²) d)`
-            - "fresnel": paraxial approximation `exp(i d (km-kx²/(2 km))`
+              :math:`\exp\left(id\left(\sqrt{k_\mathrm{m}^2 - k_\mathrm{x}^2}
+              - k_\mathrm{m}\right)\right)`
+            - "fresnel": paraxial approximation
+              :math:`\exp(-idk_\mathrm{x}^2/2k_\mathrm{m})`
         padding: bool
             Whether or not to perform zero-padding
         """
@@ -73,7 +75,7 @@ class RefocusNumpy1D(Refocus):
 
         # free space propagator is
         if self.kernel == "helmholtz":
-            # exp(i*sqrt(km²-kx²)*d)
+            # unnormalized: exp(i*sqrt(km²-kx²)*d)
             # Also subtract incoming plane wave. We are only considering
             # the scattered field here.
             root_km = km ** 2 - kx ** 2
@@ -81,9 +83,8 @@ class RefocusNumpy1D(Refocus):
             # multiply by rt0 (filter in Fourier space)
             fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
         elif self.kernel == "fresnel":
-            # exp(i*d*(km-kx²/(2*km))
-            # fstemp = np.exp(-1j * d * (kx**2/(2*km)))
-            fstemp = np.exp(-1j * d * (kx ** 2 / (2 * km)))
+            # unnormalized: exp(i*d*(km-kx²/(2*km))
+            fstemp = np.exp(-1j * d * kx ** 2 / (2 * km))
         else:
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
         return fstemp

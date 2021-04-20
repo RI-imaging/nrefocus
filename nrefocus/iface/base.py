@@ -9,8 +9,7 @@ from .. import minimizers
 class Refocus(ABC):
     def __init__(self, field, wavelength, pixel_size, medium_index=1.3333,
                  distance=0, kernel="helmholtz", padding=True):
-        """Base class for refocusing of 2D field data
-
+        r"""
         Parameters
         ----------
         field: 2d complex-valued ndarray
@@ -27,8 +26,11 @@ class Refocus(ABC):
         kernel: str
             Propagation kernel, one of
 
-            - "helmholtz": the optical transfer function `exp(idkₘ(M-1))`
-            - "fresnel": paraxial approximation `exp(idk²/kₘ)`
+            - "helmholtz": the optical transfer function
+              :math:`\exp\left(id\left(\sqrt{k_\mathrm{m}^2 - k_\mathrm{x}^2
+              - k_\mathrm{y}^2} - k_\mathrm{m}\right)\right)`
+            - "fresnel": paraxial approximation
+              :math:`\exp(-id(k_\mathrm{x}^2+k_\mathrm{y}^2)/2k_\mathrm{m})`
         padding: bool
             Whether or not to perform zero-padding
         """
@@ -43,6 +45,7 @@ class Refocus(ABC):
 
     @property
     def shape(self):
+        """Shape of the padded input field or Fourier transform"""
         return self.fft_field0.shape
 
     @abstractmethod
@@ -71,6 +74,11 @@ class Refocus(ABC):
         """
 
     def get_kernel(self, distance):
+        """Return the current kernel
+
+        Ther kernel type `self.kernel` is used
+        (see :func:`Refocus.__init__`)
+        """
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
@@ -80,13 +88,13 @@ class Refocus(ABC):
         kx = (np.fft.fftfreq(self.fft_field0.shape[0]) * twopi).reshape(-1, 1)
         ky = (np.fft.fftfreq(self.fft_field0.shape[1]) * twopi).reshape(1, -1)
         if self.kernel == "helmholtz":
-            # exp(i*sqrt(km²-kx²-ky²)*d)
+            # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
             root_km = km ** 2 - kx ** 2 - ky ** 2
             rt0 = (root_km > 0)
             # multiply by rt0 (filter in Fourier space)
             fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
         elif self.kernel == "fresnel":
-            # exp(i*d*(km-(kx²+ky²)/(2*km))
+            # unnormalized: exp(i*d*(km-(kx²+ky²)/(2*km))
             fstemp = np.exp(-1j * d * (kx ** 2 + ky ** 2) / (2 * km))
         else:
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")

@@ -2,47 +2,43 @@
 Code reference
 ==============
 
-Refocus 1D/2D fields
-::::::::::::::::::::
-.. automodule:: nrefocus._propagate
-.. autosummary::
-    fft_propagate
-    refocus
-    refocus_stack
+Refocus interface
+=================
+`Refocus` is a user-convenient interface for numerical refocusing.
+Each class implements refocusing for a specific dimensionality (1D or
+2D fields) using a specific method for refocusing (e.g. numpy FFT or FFTW).
 
-Fourier-domain propagation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: fft_propagate
+.. autoclass:: nrefocus.RefocusNumpy
+    :members:
+    :inherited-members:
 
-Refocus individual fields
-~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: refocus
-
-Refocus field stacks
-~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: refocus_stack
+.. autoclass:: nrefocus.RefocusNumpy1D
+    :members:
+    :inherited-members:
 
 
-Autofocus 1D/2D fields
-::::::::::::::::::::::
-.. automodule:: nrefocus._autofocus
-.. currentmodule:: nrefocus
-.. autosummary:: 
-    autofocus
-    autofocus_stack
 
 Metrics
-~~~~~~~
+=======
 .. automodule:: nrefocus.metrics
    :members:
+   :imported-members:
 
-.. currentmodule:: nrefocus
 
-Autofocus single fields
-~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: autofocus
+Legacy methods
+==============
+These methods are legacy functions which are kept for backwards-compatibility.
 
-Autofocus field stacks
-~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: autofocus_stack
+Refocusing
+----------
+.. autofunction:: nrefocus.refocus
+
+.. autofunction:: nrefocus.refocus_stack
+
+
+Autofocusing
+------------
+.. autofunction:: nrefocus.autofocus
+
+.. autofunction:: nrefocus.autofocus_stack
 

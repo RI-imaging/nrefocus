@@ -49,8 +49,10 @@ for mod_name in install_requires:
 
 # http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order
 # Order class attributes and functions in separate blocks
-autodoc_member_order = 'bysource'
-autodoc_mock_imports = install_requires
+# http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order
+# Order class attributes and functions in separate blocks
+autodoc_member_order = 'groupwise'
+autoclass_content = 'both'
 
 # Display link to GitHub repo instead of doc on rtfd
 rst_prolog = """
@@ -98,12 +100,7 @@ copyright = year + ", " + authors
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-html_theme_options = {"stickysidebar": True}
+html_theme = 'sphinx_rtd_theme'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = projectname+'doc'

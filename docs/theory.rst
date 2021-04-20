@@ -63,7 +63,7 @@ is described by a multiplication with the transfer function
 .. math::
     \mathcal{H}^\text{Helmholtz} &= e^{ik_\mathrm{m}Md} \\
 
-in Fourier space. This is the basis of the convolution-based numerical propagation algorithms implemented in :mod:`nrefocus`.
+in Fourier space. This is the basis of the convolution-based numerical propagation algorithms implemented in nrefocus.
 The process of numerical propagation with the angular spectrum method can be written as
 
 .. math::
@@ -127,5 +127,5 @@ by the incident plane wave :matH:`u_0(\mathbf{r_0})` according to
 As a result, the transfer functions change to
 
 .. math::
-    \mathcal{H}_\text{norm}^\text{Helmholtz} &= e^{ik_\mathrm{m}(M-1)d} \\
+    \mathcal{H}_\text{norm}^\text{Helmholtz} &= e^{ik_\mathrm{m}(M-1)d} = e^{id\left(\sqrt{k_\mathrm{m}^2 - k_\mathrm{x}^2 - k_\mathrm{y}^2} - k_\mathrm{m}\right)}\\
     \mathcal{H}_\text{norm}^\text{Fresnel} &= e^{-\frac{id(k_\mathrm{x}^2+k_\mathrm{y}^2)}{2 k_\mathrm{m}}}.

@@ -23,7 +23,7 @@ def fft_propagate(fftfield, d, nm, res, method="helmholtz", ret_fft=False):
         one of
 
             - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
-            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
+            - "fresnel"   : paraxial approximation `exp(-idk²/(2kₘ))`
 
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
@@ -76,7 +76,7 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
         one of
 
             - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
-            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
+            - "fresnel"   : paraxial approximation `exp(-idk²/(2kₘ))`
 
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
@@ -135,7 +135,7 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
         one of
 
             - "helmholtz" : the optical transfer function `exp(idkₘ(M-1))`
-            - "fresnel"   : paraxial approximation `exp(idk²/kₘ)`
+            - "fresnel"   : paraxial approximation `exp(-idk²/(2kₘ))`
 
     ret_fft : bool
         Do not perform an inverse Fourier transform and return the field
@@ -163,7 +163,6 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
         fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
         # exp(i*d*(km-(kx²+ky²)/(2*km))
-        # fstemp = np.exp(-1j * d * (kx**2+ky**2)/(2*km))
         fstemp = np.exp(-1j * d * (kx**2 + ky**2)/(2*km))
     else:
         raise ValueError("Unknown method: {}".format(method))

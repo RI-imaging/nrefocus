@@ -2,6 +2,8 @@
 Code reference
 ==============
 
+.. _sec_refocus_interface:
+
 Refocus interface
 =================
 `Refocus` is a user-convenient interface for numerical refocusing.

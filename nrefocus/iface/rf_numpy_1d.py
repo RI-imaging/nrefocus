@@ -71,7 +71,7 @@ class RefocusNumpy1D(Refocus):
         twopi = 2 * np.pi
 
         km = twopi * nm / res
-        kx = np.fft.fftfreq(len(self.fft_field0)) * 2 * np.pi
+        kx = np.fft.fftfreq(len(self.fft_origin)) * 2 * np.pi
 
         # free space propagator is
         if self.kernel == "helmholtz":
@@ -103,7 +103,7 @@ class RefocusNumpy1D(Refocus):
             Initial 1D field refocused at `distance`
         """
         fft_kernel = self.get_kernel(distance=distance)
-        refoc = np.fft.ifft(self.fft_field0 * fft_kernel)
+        refoc = np.fft.ifft(self.fft_origin * fft_kernel)
         if self.padding:
             refoc = pad.pad_rem(refoc)
         return refoc

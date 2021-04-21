@@ -41,12 +41,13 @@ class Refocus(ABC):
         self.distance = distance
         self.kernel = kernel
         self.padding = padding
-        self.fft_field0 = self._init_fft(field, padding)
+        self.origin = field
+        self.fft_origin = self._init_fft(field, padding)
 
     @property
     def shape(self):
         """Shape of the padded input field or Fourier transform"""
-        return self.fft_field0.shape
+        return self.fft_origin.shape
 
     @abstractmethod
     def _init_fft(self, field, padding):
@@ -85,8 +86,8 @@ class Refocus(ABC):
         twopi = 2 * np.pi
 
         km = twopi * nm / res
-        kx = (np.fft.fftfreq(self.fft_field0.shape[0]) * twopi).reshape(-1, 1)
-        ky = (np.fft.fftfreq(self.fft_field0.shape[1]) * twopi).reshape(1, -1)
+        kx = (np.fft.fftfreq(self.fft_origin.shape[0]) * twopi).reshape(-1, 1)
+        ky = (np.fft.fftfreq(self.fft_origin.shape[1]) * twopi).reshape(1, -1)
         if self.kernel == "helmholtz":
             # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
             root_km = km ** 2 - kx ** 2 - ky ** 2

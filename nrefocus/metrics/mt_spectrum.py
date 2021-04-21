@@ -12,7 +12,7 @@ def metric_spectrum(rfi, distance, roi=None, **kwargs):
 
     wavelength_px = rfi.wavelength / rfi.pixel_size
     kernel = rfi.get_kernel(distance)
-    fftdata = rfi.fft_field0 * kernel
+    fftdata = rfi.fft_origin * kernel
 
     # Filter Fourier transform
     fftdata[0, 0] = 0

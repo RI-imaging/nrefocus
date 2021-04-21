@@ -28,7 +28,7 @@ class RefocusNumpy(Refocus):
 
     def propagate(self, distance):
         fft_kernel = self.get_kernel(distance=distance)
-        refoc = np.fft.ifft2(self.fft_field0 * fft_kernel)
+        refoc = np.fft.ifft2(self.fft_origin * fft_kernel)
         if self.padding:
             refoc = pad.pad_rem(refoc)
         return refoc

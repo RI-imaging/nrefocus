@@ -1,3 +1,5 @@
+0.3.1
+ - dist: include submodules in wheel/dist
 0.3.0
  - feat: introduce nrefocus.RefocusNumpy and nrefocus.RefocusNumpy1D
    interface class for user-convenience and efficiency

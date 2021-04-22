@@ -21,6 +21,15 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install fftw3 libs (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get install -y libfftw3-dev libfftw3-3
+    - name: Install fftw3 libs (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew update
+        brew install fftw
     - name: Install dependencies
       run: |
         # prerequisites

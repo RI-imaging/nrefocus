@@ -145,5 +145,6 @@ texinfo_documents = [
 intersphinx_mapping = {
     "python": ('https://docs.python.org/', None),
     "numpy": ('http://docs.scipy.org/doc/numpy', None),
+    "pyfftw": ('https://pyfftw.readthedocs.io/en/stable/', None),
     "scipy": ('https://docs.scipy.org/doc/scipy/reference/', None),
     }

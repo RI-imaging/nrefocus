@@ -101,6 +101,9 @@ class Refocus(ABC):
             Autofocused field
         af_distance: float
             Autofocusing distance
+        [other]:
+            Any other objects returned by `minimizer` defined via
+            `minimizer_kwargs`
         """
         if minimizer_kwargs is None:
             minimizer_kwargs = {}

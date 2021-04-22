@@ -10,6 +10,12 @@ Refocus interface
 Each class implements refocusing for a specific dimensionality (1D or
 2D fields) using a specific method for refocusing (e.g. numpy FFT or FFTW).
 
+.. autofunction:: nrefocus.get_best_interface
+
+.. autoclass:: nrefocus.RefocusPyFFTW
+    :members:
+    :inherited-members:
+
 .. autoclass:: nrefocus.RefocusNumpy
     :members:
     :inherited-members:

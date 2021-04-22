@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+import numexpr as ne
 import numpy as np
 
 from .. import metrics
@@ -90,13 +91,26 @@ class Refocus(ABC):
         ky = (np.fft.fftfreq(self.fft_origin.shape[1]) * twopi).reshape(1, -1)
         if self.kernel == "helmholtz":
             # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
-            root_km = km ** 2 - kx ** 2 - ky ** 2
-            rt0 = (root_km > 0)
+            root_km = ne.evaluate("km ** 2 - kx**2 - ky**2",
+                                  local_dict={"kx": kx,
+                                              "ky": ky,
+                                              "km": km})
+            rt0 = ne.evaluate("root_km > 0")
             # multiply by rt0 (filter in Fourier space)
-            fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
+            fstemp = ne.evaluate(
+                "exp(1j * d * (sqrt(root_km * rt0) - km)) * rt0",
+                local_dict={"root_km": root_km,
+                            "rt0": rt0,
+                            "km": km,
+                            "d": d}
+            )
         elif self.kernel == "fresnel":
             # unnormalized: exp(i*d*(km-(kx²+ky²)/(2*km))
-            fstemp = np.exp(-1j * d * (kx ** 2 + ky ** 2) / (2 * km))
+            fstemp = ne.evaluate("exp(-1j * d * (kx**2 + ky**2) / (2 * km))",
+                                 local_dict={"kx": kx,
+                                             "ky": ky,
+                                             "km": km,
+                                             "d": d})
         else:
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
         return fstemp

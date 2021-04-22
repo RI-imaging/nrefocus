@@ -13,9 +13,15 @@ suitable for far-field propagation is not implemented in this package.
 
 Obtaining nrefocus
 ------------------
-If you have Python and :py:mod:`numpy` installed, simply run
+You can install nrefocus via::
 
     pip install nrefocus
+
+If you would like to take advantage of fast Fourer transforms with
+`PyFFTW <https://pyfftw.readthedocs.io/>`__, please also install the
+`pyfftw` package or use the extras key `FFTW`::
+
+    pip install nrefocus[FFTW]
 
 The source code of nrefocus is available at
 https://github.com/RI-imaging/nrefocus.

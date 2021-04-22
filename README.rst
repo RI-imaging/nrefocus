@@ -16,9 +16,10 @@ The documentation is available is available at
 
 Installation
 ------------
-Install from the Python package index::
+Install from the Python package index (the `FFTW` extra enables fast
+Fourer transforms with `PyFFTW <https://pyfftw.readthedocs.io/>`__)::
 
-    pip install nrefocus
+    pip install nrefocus[FFTW]
 
 or clone the repository and run::
 

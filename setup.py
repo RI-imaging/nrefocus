@@ -24,7 +24,11 @@ setup(
     license="BSD (3 clause)",
     description=description,
     long_description=open("README.rst").read() if exists("README.rst") else "",
-    install_requires=["numpy>=1.5.1"],
+    install_requires=[
+        "numexpr",
+        "numpy>=1.5.1",
+    ],
+    extras_require={"FFTW": "pyfftw>=0.12.0"},
     python_requires=">=3.6, <4",
     keywords=["autofocus",
               "refocus",

@@ -38,6 +38,13 @@ def refocus(field, d, nm, res, method="helmholtz", padding=True):
     Returns
     -------
     Electric field at `d`.
+
+    Notes
+    -----
+    This method uses :class:`nrefocus.RefocusNumpy` for refocusing
+    of 2D fields. This is because the :func:`nrefocus.refocus_stack`
+    function uses `async` which appears to not work with e.g.
+    :mod:`pyfftw`.
     """
     fshape = len(field.shape)
     if fshape == 1:
@@ -101,7 +108,6 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     -------
     Electric field stack at `d`.
     """
-
     func = refocus
     names = func.__code__.co_varnames[:func.__code__.co_argcount]
 

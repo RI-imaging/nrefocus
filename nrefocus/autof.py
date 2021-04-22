@@ -57,6 +57,13 @@ def autofocus(field, nm, res, ival, roi=None,
     field, [d, [grad]]
     The focused field and optionally, the optimal focusing distance and
     the computed gradients.
+
+    Notes
+    -----
+    This method uses :class:`nrefocus.RefocusNumpy` for refocusing
+    of 2D fields. This is because the :func:`nrefocus.refocus_stack`
+    function uses `async` which appears to not work with e.g.
+    :mod:`pyfftw`.
     """
     fshape = len(field.shape)
     if fshape == 1:

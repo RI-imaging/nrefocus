@@ -21,7 +21,6 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 # Get version number from qpimage._version file
-import mock
 import os.path as op
 import sys
 
@@ -33,19 +32,6 @@ sys.path.append(op.abspath('extensions'))
 
 exec(open(op.join(pdir, "nrefocus/_version.py")).read())
 release = version  # noqa: F821
-
-
-# Mock all dependencies
-install_requires = ["numpy", "scipy"]
-
-for mod_name in install_requires:
-    sys.modules[mod_name] = mock.Mock()
-
-
-# Mock all dependencies of ODTbrain
-install_requires = ["numpy"]
-for mod_name in install_requires:
-    sys.modules[mod_name] = mock.Mock()
 
 # http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order
 # Order class attributes and functions in separate blocks

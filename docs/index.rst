@@ -9,10 +9,15 @@ This is the documentaion of nrefocus version |release|.
    :maxdepth: 3
    :caption: Contents:
 
-   introduction
-   theory
-   code_reference
-   examples
+   sec_introduction
+   sec_theory
+   sec_examples
+   sec_code_reference
+
+.. toctree::
+   :maxdepth: 1
+
+   sec_changelog
    sec_z_bib
 
 Indices and tables

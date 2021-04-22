@@ -56,6 +56,7 @@ extensions = ['sphinx.ext.intersphinx',
               'sphinx.ext.napoleon',
               'sphinx.ext.viewcode',
               'fancy_include',
+              'github_changelog',
               'sphinxcontrib.bibtex',
               ]
 

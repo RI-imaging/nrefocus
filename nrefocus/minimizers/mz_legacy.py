@@ -5,7 +5,7 @@ import numpy as np
 
 def minimize_legacy(rf, metric_func, interval, roi=None,
                     coarse_acc=1, fine_acc=.005,
-                    return_gradient=True, padding=None):
+                    return_gradient=False, padding=None):
     """Find the focus by minimizing the `metric` of an image
 
     This is the implementation of the legacy nrefocus minimizer.

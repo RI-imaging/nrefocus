@@ -75,6 +75,46 @@ class Refocus(ABC):
         :func:`nrefocus.pad.padd_add` during initialization.
         """
 
+    def autofocus(self, metric="average gradient", minimizer="legacy",
+                  minimizer_kwargs=None, interval=(None, None), roi=None):
+        """Autofocus the initial field
+
+        Parameters
+        ----------
+        metric: str
+            - "average gradient" : average gradient metric of amplitude
+            - "rms contrast" : RMS contrast of phase data
+            - "spectrum" : sum of filtered Fourier coefficients
+        minimizer: str
+            - "legacy": custom nrefocus minimizer
+        interval: tuple of floats
+            Approximate interval to search for optimal focus [m]
+        roi: rectangular region of interest (x1, y1, x2, y2)
+            Region of interest of `field` for which the metric will be
+            minimized. If not given, the entire `field` will be used.
+        minimizer_kwargs: dict
+            Any additional keyword arguments for the minimizer
+
+        Returns
+        -------
+        af_field: 2d ndarray
+            Autofocused field
+        af_distance: float
+            Autofocusing distance
+        """
+        if minimizer_kwargs is None:
+            minimizer_kwargs = {}
+        metric_func = metrics.METRICS[metric]
+        assert minimizer == "legacy"
+        minimize_func = minimizers.minimize_legacy
+        af_data = minimize_func(
+            rf=self,
+            metric_func=metric_func,
+            interval=np.array(interval) / self.pixel_size,
+            roi=roi,
+            **minimizer_kwargs)
+        return af_data
+
     def get_kernel(self, distance):
         """Return the current kernel
 
@@ -114,42 +154,6 @@ class Refocus(ABC):
         else:
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
         return fstemp
-
-    def autofocus(self, metric="average gradient", minimizer="legacy",
-                  interval=(None, None), roi=None, minimizer_kwargs=None):
-        """Autofocus the initial field
-
-        Parameters
-        ----------
-        metric: str
-            - "average gradient" : average gradient metric of amplitude
-            - "rms contrast" : RMS contrast of phase data
-            - "spectrum" : sum of filtered Fourier coefficients
-        minimizer: str
-            - "legacy": custom nrefocus minimizer
-        interval: tuple of floats
-            Approximate interval to search for optimal focus in px.
-        roi: rectangular region of interest (x1, y1, x2, y2)
-            Region of interest of `field` for which the metric will be
-            minimized. If not given, the entire `field` will be used.
-
-        Returns
-        -------
-        af_field: 2d ndarray
-            Autofocused field
-        af_distance: float
-            Autofocusing distance
-        """
-        if minimizer_kwargs is None:
-            minimizer_kwargs = {}
-        metric_func = metrics.METRICS[metric]
-        minimize_func = minimizers.mz_legacy
-        af_field, af_distance = minimize_func(rfi=self,
-                                              metric_func=metric_func,
-                                              interval=interval,
-                                              roi=roi,
-                                              **minimizer_kwargs)
-        return af_field, af_distance
 
     @abstractmethod
     def propagate(self, distance):

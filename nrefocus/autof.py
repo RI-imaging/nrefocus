@@ -2,8 +2,6 @@ import multiprocessing as mp
 import numpy as np
 
 from . import iface
-from . import metrics
-from .minimizers import minimize_legacy
 from .propg import refocus_stack
 
 
@@ -75,8 +73,6 @@ def autofocus(field, nm, res, ival, roi=None,
     else:
         raise AssertionError("Dimension of `field` must be 1 or 2.")
 
-    metric_func = metrics.METRICS[metric]
-
     # use a made-up pixel size so we can use the new `Refocus` interface
     pixel_size = 1e-6
     rf = rfcls(field=field,
@@ -88,11 +84,12 @@ def autofocus(field, nm, res, ival, roi=None,
                padding=padding
                )
 
-    field, d, grad = minimize_legacy(rf=rf,
-                                     metric_func=metric_func,
-                                     interval=ival,
-                                     roi=roi,
-                                     padding=padding)
+    field, d, grad = rf.autofocus(metric=metric,
+                                  minimizer="legacy",
+                                  interval=np.array(ival)*rf.pixel_size,
+                                  roi=roi,
+                                  minimizer_kwargs={"return_gradient": True}
+                                  )
 
     ret_list = [field]
     if ret_d:

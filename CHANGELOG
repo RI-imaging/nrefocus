@@ -1,3 +1,6 @@
+0.4.1
+ - fix: `autofocus` method of Refocus was not functional
+ - ref: use `Refocus.autofocus` for legacy autofocus method
 0.4.0
  - feat: implement nrefocus.RefocusPyFFTW for faster refocusing
    using pyfftw (#11)

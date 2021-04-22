@@ -27,7 +27,7 @@ jobs:
         python -m pip install --upgrade pip wheel
         python -m pip install codecov coverage flake8 pytest
         # install dependencies
-        pip install -e .
+        pip install -e .[FFTW]
         # show installed packages
         pip freeze
     - name: Test with pytest

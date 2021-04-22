@@ -6,7 +6,10 @@ from .base import Refocus
 
 
 class RefocusNumpy(Refocus):
-    """Refocusing with numpy-based Fourier transform"""
+    """Refocusing with numpy-based Fourier transform
+
+    .. versionadded:: 0.3.0
+    """
     def _init_fft(self, field, padding):
         """Perform initial Fourier transform of the input field
 

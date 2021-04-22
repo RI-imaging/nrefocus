@@ -1,8 +1,6 @@
-"""
+"""Convenience functions for padding
 
 .. versionadded:: 0.1.4
-
-Convenience functions for padding.
 """
 from __future__ import division, print_function
 

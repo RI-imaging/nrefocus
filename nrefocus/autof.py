@@ -155,11 +155,11 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     dopt = list()
     grad = list()
 
-    M = fieldstack.shape[0]
+    m = fieldstack.shape[0]
 
     # setup arguments
     stackargs = list()
-    for s in range(M):
+    for s in range(m):
         stackargs.append([np.array(fieldstack[s], copy=copy), nm, res, ival,
                           roi, metric, padding, True, True, 1])
     # perform first pass
@@ -168,13 +168,10 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     p.close()
     p.terminate()
     p.join()
-    # result = []
-    # for arg in stackargs:
-    #    result += _autofocus_wrapper(arg)
 
     newstack = np.zeros(fieldstack.shape, dtype=fieldstack.dtype)
 
-    for s in range(M):
+    for s in range(m):
         field, ds, gs = result[s]
         dopt.append(ds)
         grad.append(gs)

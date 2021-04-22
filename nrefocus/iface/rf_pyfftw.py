@@ -9,7 +9,10 @@ from .base import Refocus
 
 
 class RefocusPyFFTW(Refocus):
-    """Refocusing with FFTW"""
+    """Refocusing with FFTW
+
+    .. versionadded:: 0.4.0
+    """
     def _init_fft(self, field, padding):
         """Perform initial Fourier transform of the input field
 

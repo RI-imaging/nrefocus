@@ -10,6 +10,8 @@ class RefocusNumpy1D(Refocus):
                  distance=0, kernel="helmholtz", padding=True):
         r"""Refocus a 1D field with numpy
 
+        .. versionadded:: 0.3.0
+
         Parameters
         ----------
         field: 1d complex-valued ndarray

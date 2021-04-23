@@ -5,7 +5,8 @@ import numpy as np
 
 def minimize_legacy(rf, metric_func, interval, roi=None,
                     coarse_acc=1, fine_acc=.005,
-                    return_gradient=False, padding=None):
+                    ret_gradient=False, padding=None,
+                    return_gradient=None):
     """Find the focus by minimizing the `metric` of an image
 
     This is the implementation of the legacy nrefocus minimizer.
@@ -26,7 +27,7 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
         accuracy for determination of global minimum in pixels
     fine_acc: float
         accuracy for fine localization percentage of gradient change
-    return_gradient:
+    ret_gradient:
         return x and y values of computed gradient
     padding: bool
         perform padding with linear ramp from edge to average
@@ -34,7 +35,24 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
 
         .. versionchanged:: 0.1.4
            improved padding value and padding location
+    return_gradient: bool
+        Deprecated, use ret_gradient instead!
+
+    Returns
+    -------
+    af_field: ndarray
+        Autofocused field
+    af_dist: float
+        Autofocusing distance
+    gradients: list of tuples of ndarrays, optional
+        Only returned if `ret_gradient` is specified
+
     """
+    if return_gradient is not None:
+        warnings.warn("`return_gradient` is deprecated, please use "
+                      "`ret_gradient` instead!", DeprecationWarning)
+        ret_gradient = return_gradient
+
     if roi is not None:
         assert len(roi) == len(rf.shape) * \
             2, "ROI must match field dimension"
@@ -102,8 +120,8 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
             break
 
     minid = np.argmin(gradf)
-    fsp = rf.propagate(zf[minid]*rf.pixel_size)
+    af_field = rf.propagate(zf[minid]*rf.pixel_size)
 
-    if return_gradient:
-        return fsp, zf[minid], [(zc, gradc), (zf, gradf)]
-    return fsp, zf[minid]
+    if ret_gradient:
+        return af_field, zf[minid], [(zc, gradc), (zf, gradf)]
+    return af_field, zf[minid]

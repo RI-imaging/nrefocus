@@ -88,12 +88,12 @@ def autofocus(field, nm, res, ival, roi=None,
                                   minimizer="legacy",
                                   interval=np.array(ival)*rf.pixel_size,
                                   roi=roi,
-                                  minimizer_kwargs={"return_gradient": True}
+                                  minimizer_kwargs={"ret_gradient": True}
                                   )
 
     ret_list = [field]
     if ret_d:
-        ret_list += [d]
+        ret_list += [d/pixel_size]
     if ret_grad:
         ret_list += [grad]
 

@@ -116,6 +116,11 @@ class Refocus(ABC):
             interval=np.array(interval) / self.pixel_size,
             roi=roi,
             **minimizer_kwargs)
+        # multiply af_distance by pixel size
+        # (convert to list for indexing and back to tuple)
+        af_data = list(af_data)
+        af_data[1] *= self.pixel_size
+        af_data = tuple(af_data)
         return af_data
 
     def get_kernel(self, distance):

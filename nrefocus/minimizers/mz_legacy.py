@@ -19,12 +19,14 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
         metric called during minimization. The metric should take
         the following arguments: `rf`, `distance`, and `roi`
     interval: tuple of floats
-        (minimum, maximum) of interval to search in pixels
-    roi: rectangular region of interest (x1, y1, x2, y2)
-        Region of interest of `field` for which the metric will be
-        minimized. If not given, the entire `field` will be used.
+        (minimum, maximum) of interval to search [m]
+    roi: tuple of slices or np.ndarray
+        Region of interest for which the metric will be minimized.
+        If not given, the entire field will be used.
     coarse_acc: float
-        accuracy for determination of global minimum in pixels
+        accuracy for determination of global minimum in pixels;
+        `coarse_acc=1` means that 100 fields are computed in the
+        initial step; `coarse_acc=0.5` means 200 fields are computed
     fine_acc: float
         accuracy for fine localization percentage of gradient change
     ret_gradient:
@@ -43,7 +45,7 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
     af_field: ndarray
         Autofocused field
     af_dist: float
-        Autofocusing distance
+        Autofocusing distance [m]
     gradients: list of tuples of ndarrays, optional
         Only returned if `ret_gradient` is specified
 
@@ -53,33 +55,13 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
                       "`ret_gradient` instead!", DeprecationWarning)
         ret_gradient = return_gradient
 
-    if roi is not None:
-        assert len(roi) == len(rf.shape) * \
-            2, "ROI must match field dimension"
-
     if padding is not None:
         warnings.warn("The `padding` argument is deprecated, please only "
                       "specify it in the Refocus interface!")
         if padding != rf.padding:
             raise ValueError("Padding must match padding in `rf`!")
 
-    initshape = rf.shape
-    shapelen = len(initshape)
-
-    if roi is None:
-        if shapelen == 2:
-            roi = (0, 0, rf.shape[0], rf.shape[1])
-        else:
-            roi = (0, rf.shape[0])
-
-    if shapelen == 2:
-        roi_slice = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
-    else:
-        roi_slice = slice(roi[0], roi[1])
-
     ival = interval
-    if ival[0] > ival[1]:
-        ival = (ival[1], ival[0])
     # set coarse interval
     n = int(100 / coarse_acc)
     zc = np.linspace(ival[0], ival[1], n, endpoint=True)
@@ -88,7 +70,7 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
     gradc = np.zeros(zc.shape)
     for i in range(len(zc)):
         d = zc[i]
-        gradc[i] = metric_func(rf, distance=d*rf.pixel_size, roi=roi_slice)
+        gradc[i] = metric_func(rf, distance=d, roi=roi)
 
     minid = np.argmin(gradc)
     if minid == 0:
@@ -108,7 +90,7 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
         zf = np.linspace(ival[0], ival[1], numfine)
         for i in range(len(zf)):
             d = zf[i]
-            gradf[i] = metric_func(rf, distance=d*rf.pixel_size, roi=roi_slice)
+            gradf[i] = metric_func(rf, distance=d, roi=roi)
         minid = np.argmin(gradf)
         if minid == 0:
             zf -= zf[1] - zf[0]
@@ -120,8 +102,9 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
             break
 
     minid = np.argmin(gradf)
-    af_field = rf.propagate(zf[minid]*rf.pixel_size)
+    af_dist = zf[minid]
+    af_field = rf.propagate(af_dist)
 
     if ret_gradient:
-        return af_field, zf[minid], [(zc, gradc), (zf, gradf)]
-    return af_field, zf[minid]
+        return af_field, af_dist, [(zc, gradc), (zf, gradf)]
+    return af_field, af_dist

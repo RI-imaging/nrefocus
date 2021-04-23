@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import numbers
 
 import numexpr as ne
 import numpy as np
@@ -89,9 +90,11 @@ class Refocus(ABC):
             - "legacy": custom nrefocus minimizer
         interval: tuple of floats
             Approximate interval to search for optimal focus [m]
-        roi: rectangular region of interest (x1, y1, x2, y2)
-            Region of interest of `field` for which the metric will be
-            minimized. If not given, the entire `field` will be used.
+        roi: list or tuple or slice or ndarray
+            Region of interest for which the metric will be minimized.
+            This can be either a list [x1, y1, x2, y2], a tuple or
+            list of slices or a numpy indexing array. If not given,
+            the entire field will be used.
         minimizer_kwargs: dict
             Any additional keyword arguments for the minimizer
 
@@ -107,20 +110,34 @@ class Refocus(ABC):
         """
         if minimizer_kwargs is None:
             minimizer_kwargs = {}
+
+        # flip interval for user convenience
+        if interval[0] > interval[1]:
+            interval = (interval[1], interval[0])
+
+        # construct the correct ROI
+        if (isinstance(roi, (list, tuple))
+                and isinstance(roi[0], numbers.Number)):
+            # We have a list of [x1, y1, x2, y2]
+            if len(roi) == 2:
+                roi = slice(roi[0], roi[1])
+            elif len(roi) == 4:
+                roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
+            else:
+                raise ValueError(f"Unexpected valud for `roi`: '{roi}'")
+        elif roi is None:
+            # Use all the data
+            roi = slice(None, None)
+
         metric_func = metrics.METRICS[metric]
         assert minimizer == "legacy"
         minimize_func = minimizers.minimize_legacy
         af_data = minimize_func(
             rf=self,
             metric_func=metric_func,
-            interval=np.array(interval) / self.pixel_size,
+            interval=interval,
             roi=roi,
             **minimizer_kwargs)
-        # multiply af_distance by pixel size
-        # (convert to list for indexing and back to tuple)
-        af_data = list(af_data)
-        af_data[1] *= self.pixel_size
-        af_data = tuple(af_data)
         return af_data
 
     def get_kernel(self, distance):

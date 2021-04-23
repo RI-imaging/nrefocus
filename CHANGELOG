@@ -1,5 +1,6 @@
 0.4.3
  - ref: deprecate minimizer argument
+ - ref: legacy minimizer now thinks in SI units
  - ref: minor cleanup in autofocusing code
 0.4.2
  - docs: minor improvements

@@ -74,7 +74,7 @@ def autofocus(field, nm, res, ival, roi=None,
         raise AssertionError("Dimension of `field` must be 1 or 2.")
 
     # use a made-up pixel size so we can use the new `Refocus` interface
-    pixel_size = 1e-6
+    pixel_size = 1
     rf = rfcls(field=field,
                wavelength=res*pixel_size,
                pixel_size=pixel_size,

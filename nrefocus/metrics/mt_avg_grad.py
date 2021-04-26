@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def metric_average_gradient(rfi, distance, roi=None, *kwargs):
+def metric_average_gradient(rfi, distance, roi=None, **kwargs):
     """Compute mean average gradient norm of the amplitude
 
     Notes
@@ -9,6 +9,6 @@ def metric_average_gradient(rfi, distance, roi=None, *kwargs):
     The absolute value of the gradient is returned.
     """
     data = np.abs(rfi.propagate(distance))
-    if roi:
+    if roi is not None:
         data = data[roi]
     return np.average(np.array(np.gradient(data))**2)

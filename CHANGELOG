@@ -1,3 +1,6 @@
+0.4.4
+ - fix: check for None instead of boolean evaluation for
+   metrics dealing with ROIs
 0.4.3
  - ref: deprecate minimizer argument
  - ref: legacy minimizer now thinks in SI units

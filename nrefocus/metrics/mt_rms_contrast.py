@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def metric_rms_contrast(rfi, distance, roi=None, *kwargs):
+def metric_rms_contrast(rfi, distance, roi=None, **kwargs):
     """Compute RMS contrast of the phase
 
     Notes
@@ -11,6 +11,6 @@ def metric_rms_contrast(rfi, distance, roi=None, *kwargs):
     data = -np.anlge(rfi.propagate(distance))
     av = np.average(data, *kwargs)
     mal = 1 / (data.shape[0] * data.shape[1])
-    if roi:
+    if roi is not None:
         data = data[roi]
     return np.sqrt(mal * np.sum((data - av)**2))

@@ -1,3 +1,4 @@
+import copy
 import multiprocessing as mp
 import numpy as np
 
@@ -15,8 +16,8 @@ _cpu_count = mp.cpu_count()
 
 
 def autofocus(field, nm, res, ival, roi=None,
-              metric="average gradient", padding=True,
-              ret_d=False, ret_grad=False, num_cpus=1):
+              metric="average gradient", minimizer="lmfit",
+              minimizer_kwargs=None, padding=True, num_cpus=1):
     """Numerical autofocusing of a field using the Helmholtz equation.
 
     Parameters
@@ -36,25 +37,26 @@ def autofocus(field, nm, res, ival, roi=None,
         - "average gradient" : average gradient metric of amplitude
         - "rms contrast" : RMS contrast of phase data
         - "spectrum" : sum of filtered Fourier coefficients
+    minimizer: str
+        - "lmfit" : lmfit-based minimizer
+        - "legacy" : only use for reproducing old results
+    minimizer_kwargs: dict
+        Optional keyword arguments to the `minimizer` function
     padding: bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
 
         .. versionchanged:: 0.1.4
            improved padding value and padding location
-    ret_d: bool
-        Return the autofocusing distance in pixels. Defaults to False.
-    ret_grad: bool
-        Return the computed gradients as a list.
     num_cpus: int
         Not implemented.
 
 
     Returns
     -------
-    field, [d, [grad]]
-    The focused field and optionally, the optimal focusing distance and
-    the computed gradients.
+    d, field [, other]:
+        The focusing distance, the field, and optionally any other
+        data returned by the minimizer (specify via `minimizer_kwargs`).
 
     Notes
     -----
@@ -73,6 +75,15 @@ def autofocus(field, nm, res, ival, roi=None,
     else:
         raise AssertionError("Dimension of `field` must be 1 or 2.")
 
+    if minimizer_kwargs is None:
+        minimizer_kwargs = {}
+    else:
+        minimizer_kwargs = copy.deepcopy(minimizer_kwargs)
+
+    if "ret_field" not in minimizer_kwargs:
+        # return field by default
+        minimizer_kwargs["ret_field"] = True
+
     # use a made-up pixel size so we can use the new `Refocus` interface
     pixel_size = 1
     rf = rfcls(field=field,
@@ -84,28 +95,19 @@ def autofocus(field, nm, res, ival, roi=None,
                padding=padding
                )
 
-    field, d, grad = rf.autofocus(metric=metric,
-                                  minimizer="legacy",
-                                  interval=np.array(ival)*rf.pixel_size,
-                                  roi=roi,
-                                  minimizer_kwargs={"ret_gradient": True}
-                                  )
+    data = rf.autofocus(metric=metric,
+                        minimizer=minimizer,
+                        interval=np.array(ival)*rf.pixel_size,
+                        roi=roi,
+                        minimizer_kwargs=minimizer_kwargs,
+                        )
 
-    ret_list = [field]
-    if ret_d:
-        ret_list += [d/pixel_size]
-    if ret_grad:
-        ret_list += [grad]
-
-    if len(ret_list) == 1:
-        return ret_list[0]
-    else:
-        return tuple(ret_list)
+    return data
 
 
 def autofocus_stack(fieldstack, nm, res, ival, roi=None,
-                    metric="average gradient", padding=True,
-                    same_dist=False, ret_ds=False, ret_grads=False,
+                    metric="average gradient", minimizer="lmfit",
+                    minimizer_kwargs=None, padding=True, same_dist=False,
                     num_cpus=_cpu_count, copy=True):
     """Numerical autofocusing of a stack using the Helmholtz equation.
 
@@ -124,6 +126,11 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
         minimized. If not given, the entire `field` will be used.
     metric: str
         see `autofocus_field`.
+    minimizer: str
+        - "lmfit" : lmfit-based minimizer
+        - "legacy" : only use for reproducing old results
+    minimizer_kwargs: dict
+        Optional keyword arguments to the `minimizer` function
     padding: bool
         Perform padding with linear ramp from edge to average
         to reduce ringing artifacts.
@@ -132,13 +139,6 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
            improved padding value and padding location
     same_dist: bool
         Refocus entire sinogram with one distance.
-    ret_ds: bool
-        Return the autofocusing distances in pixels. Defaults to False.
-        If sam_dist is True, still returns autofocusing distances
-        of first pass. The used refocusing distance is the
-        average.
-    ret_grads: bool
-        Return the computed gradients as a list.
     num_cpus: int
         Number of CPUs to use
     copy: bool
@@ -147,10 +147,12 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
 
     Returns
     -------
-    The focused field (and the refocussing distance + data if d is None)
+    dopt: float or list of float
+        The focusing distance(s) (only one value if `same_dist`)
+    field_stack: np.ndarray
+        The refocused field stack
     """
     dopt = list()
-    grad = list()
 
     m = fieldstack.shape[0]
 
@@ -158,7 +160,8 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     stackargs = list()
     for s in range(m):
         stackargs.append([np.array(fieldstack[s], copy=copy), nm, res, ival,
-                          roi, metric, padding, True, True, 1])
+                          roi, metric, minimizer, minimizer_kwargs,
+                          padding, 1])
     # perform first pass
     p = mp.Pool(num_cpus)
     result = p.map_async(_autofocus_wrapper, stackargs).get()
@@ -169,10 +172,9 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     newstack = np.zeros(fieldstack.shape, dtype=fieldstack.dtype)
 
     for s in range(m):
-        field, ds, gs = result[s]
-        dopt.append(ds)
-        grad.append(gs)
-        newstack[s] = field
+        if isinstance(result[s], list):
+            dopt.append(result[s][0])
+            newstack[s] = result[s][1]
 
     # perform second pass if `same_dist` is True
     if same_dist:
@@ -182,16 +184,9 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
                                  num_cpus=num_cpus, copy=copy,
                                  padding=padding)
 
-    ret_list = [newstack]
-    if ret_ds:
-        ret_list += [dopt]
-    if ret_grads:
-        ret_list += [grad]
-
-    if len(ret_list) == 1:
-        return ret_list[0]
+        return davg, newstack
     else:
-        return tuple(ret_list)
+        return dopt, newstack
 
 
 def _autofocus_wrapper(args):

@@ -3,12 +3,16 @@ import warnings
 import numpy as np
 
 
+class LegacyDeprecationWarning(DeprecationWarning):
+    pass
+
+
 def minimize_legacy(rf, metric_func, interval, roi=None,
                     coarse_acc=1, fine_acc=.005,
-                    ret_gradient=False, padding=None,
-                    return_gradient=None):
-    """Find the focus by minimizing the `metric` of an image
+                    ret_gradient=False, ret_field=False):
+    """Legacy minimizer
 
+    Find the focus by minimizing the `metric` of an image.
     This is the implementation of the legacy nrefocus minimizer.
 
     Parameters
@@ -31,14 +35,8 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
         accuracy for fine localization percentage of gradient change
     ret_gradient:
         return x and y values of computed gradient
-    padding: bool
-        perform padding with linear ramp from edge to average
-        to reduce ringing artifacts.
-
-        .. versionchanged:: 0.1.4
-           improved padding value and padding location
-    return_gradient: bool
-        Deprecated, use ret_gradient instead!
+    ret_field:
+        return the optimal refocused field for user convenience
 
     Returns
     -------
@@ -48,18 +46,11 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
         Autofocusing distance [m]
     gradients: list of tuples of ndarrays, optional
         Only returned if `ret_gradient` is specified
-
     """
-    if return_gradient is not None:
-        warnings.warn("`return_gradient` is deprecated, please use "
-                      "`ret_gradient` instead!", DeprecationWarning)
-        ret_gradient = return_gradient
-
-    if padding is not None:
-        warnings.warn("The `padding` argument is deprecated, please only "
-                      "specify it in the Refocus interface!")
-        if padding != rf.padding:
-            raise ValueError("Padding must match padding in `rf`!")
+    warnings.warn("The 'legacy' minimizer is deprecated, because it is "
+                  "slow and not as accurate as the 'lmfit' minimizer! "
+                  "Please only use 'legacy' to reproduce previous results.",
+                  LegacyDeprecationWarning)
 
     ival = interval
     # set coarse interval
@@ -103,8 +94,15 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
 
     minid = np.argmin(gradf)
     af_dist = zf[minid]
-    af_field = rf.propagate(af_dist)
+
+    ret_val = [af_dist]
+    if ret_field:
+        ret_val.append(rf.propagate(af_dist))
 
     if ret_gradient:
-        return af_field, af_dist, [(zc, gradc), (zf, gradf)]
-    return af_field, af_dist
+        ret_val.append([(zc, gradc), (zf, gradf)])
+
+    if len(ret_val) == 1:
+        ret_val = ret_val[0]
+
+    return ret_val

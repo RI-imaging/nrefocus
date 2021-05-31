@@ -76,7 +76,7 @@ class Refocus(ABC):
         :func:`nrefocus.pad.padd_add` during initialization.
         """
 
-    def autofocus(self, metric="average gradient", minimizer="legacy",
+    def autofocus(self, metric="average gradient", minimizer="lmfit",
                   minimizer_kwargs=None, interval=(None, None), roi=None):
         """Autofocus the initial field
 
@@ -88,6 +88,7 @@ class Refocus(ABC):
             - "spectrum" : sum of filtered Fourier coefficients
         minimizer: str
             - "legacy": custom nrefocus minimizer
+            - "lmfit": lmfit-based minimizer
         interval: tuple of floats
             Approximate interval to search for optimal focus [m]
         roi: list or tuple or slice or ndarray
@@ -100,8 +101,6 @@ class Refocus(ABC):
 
         Returns
         -------
-        af_field: 2d ndarray
-            Autofocused field
         af_distance: float
             Autofocusing distance
         [other]:
@@ -130,8 +129,7 @@ class Refocus(ABC):
             roi = slice(None, None)
 
         metric_func = metrics.METRICS[metric]
-        assert minimizer == "legacy"
-        minimize_func = minimizers.minimize_legacy
+        minimize_func = minimizers.MINIMIZERS[minimizer]
         af_data = minimize_func(
             rf=self,
             metric_func=metric_func,

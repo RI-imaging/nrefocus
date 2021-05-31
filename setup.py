@@ -25,6 +25,7 @@ setup(
     description=description,
     long_description=open("README.rst").read() if exists("README.rst") else "",
     install_requires=[
+        "lmfit",
         "numexpr",
         "numpy>=1.5.1",
     ],

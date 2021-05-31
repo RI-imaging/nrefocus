@@ -1,4 +1,13 @@
-0.4.4
+0.5.0
+ - BREAKING CHANGE: The "legacy" minimizer is deprecated in favor of
+   the new lmfit-based minimizer. The default minimizer is now "lmfit".
+ - BREAKING CHANGE: Removed the "ret_grad" and "ret_d" keyword argument
+   from autofocusing methods, which only played a role for the legacy
+   minimizer
+ - BREAKING CHANGE: By default, the minimizer do not anymore return the
+   refocused field, this can be re-enabled by using the `ret_field`
+   option
+ - build: lmfit is now a dependency
  - fix: check for None instead of boolean evaluation for
    metrics dealing with ROIs
 0.4.3

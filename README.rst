@@ -23,7 +23,7 @@ Fourer transforms with `PyFFTW <https://pyfftw.readthedocs.io/>`__)::
 
 or clone the repository and run::
 
-    pip install -e .
+    pip install -e .[FFTW]
 
 
 Testing

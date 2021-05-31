@@ -29,8 +29,8 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, ret_field=False,
     ret_field:
         return the optimal refocused field for user convenience
     lmfitkw:
-        Additional keyword arguments for :func:`lmfit.minimize`.
-        The default `method` is "leastsq".
+        Additional keyword arguments for :func:`lmfit.minimize
+        <lmfit.minimizer.minimize>`. The default `method` is "leastsq".
 
     Returns
     -------

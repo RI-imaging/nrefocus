@@ -88,7 +88,8 @@ class Refocus(ABC):
             - "spectrum" : sum of filtered Fourier coefficients
         minimizer: str
             - "legacy": custom nrefocus minimizer
-            - "lmfit": lmfit-based minimizer
+            - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize
+              <lmfit.minimizer.minimize>`)
         interval: tuple of floats
             Approximate interval to search for optimal focus [m]
         roi: list or tuple or slice or ndarray

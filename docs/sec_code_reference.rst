@@ -33,6 +33,13 @@ Metrics
    :imported-members:
 
 
+Minimizers
+==========
+.. automodule:: nrefocus.minimizers
+   :members:
+   :imported-members:
+
+
 Legacy methods
 ==============
 These methods are legacy functions which are kept for backwards-compatibility.

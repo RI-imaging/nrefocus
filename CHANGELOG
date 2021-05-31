@@ -7,6 +7,8 @@
  - BREAKING CHANGE: By default, the minimizer do not anymore return the
    refocused field, this can be re-enabled by using the `ret_field`
    option
+ - enh: introduce `Refocus.compute_metric` for metric landscape
+   analysis
  - build: lmfit is now a dependency
  - fix: check for None instead of boolean evaluation for
    metrics dealing with ROIs

@@ -76,12 +76,14 @@ class Refocus(ABC):
         :func:`nrefocus.pad.padd_add` during initialization.
         """
 
-    def autofocus(self, metric="average gradient", minimizer="lmfit",
-                  minimizer_kwargs=None, interval=(None, None), roi=None):
+    def autofocus(self, interval, metric="average gradient", minimizer="lmfit",
+                  minimizer_kwargs=None, roi=None):
         """Autofocus the initial field
 
         Parameters
         ----------
+        interval: tuple of floats
+            Approximate interval to search for optimal focus [m]
         metric: str
             - "average gradient" : average gradient metric of amplitude
             - "rms contrast" : RMS contrast of phase data
@@ -90,8 +92,6 @@ class Refocus(ABC):
             - "legacy": custom nrefocus minimizer
             - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize
               <lmfit.minimizer.minimize>`)
-        interval: tuple of floats
-            Approximate interval to search for optimal focus [m]
         roi: list or tuple or slice or ndarray
             Region of interest for which the metric will be minimized.
             This can be either a list [x1, y1, x2, y2], a tuple or
@@ -138,6 +138,49 @@ class Refocus(ABC):
             roi=roi,
             **minimizer_kwargs)
         return af_data
+
+    def compute_metric(self, interval, metric="average gradient", roi=None,
+                       num_steps=50):
+        """Compute a metric in a certain interval
+
+        This is a convenience method for visualizing the refocusing
+        landscape of a dataset.
+
+        interval: tuple of floats
+            Approximate interval to search for optimal focus [m]
+        metric: str
+            - "average gradient" : average gradient metric of amplitude
+            - "rms contrast" : RMS contrast of phase data
+            - "spectrum" : sum of filtered Fourier coefficients
+        roi: list or tuple or slice or ndarray
+            Region of interest for which the metric will be minimized.
+            This can be either a list [x1, y1, x2, y2], a tuple or
+            list of slices or a numpy indexing array. If not given,
+            the entire field will be used.
+        num_steps: int
+            Total number of steps in `interval` for which to compute
+            the metric.
+
+        Returns
+        -------
+        distances: 1d array of float
+            The refocusing distances defined by `interval` and `num_steps`
+        eval_metric: 1d array of float
+            The computed metric at the specified focusing distances
+        """
+        # flip interval for user convenience
+        if interval[0] > interval[1]:
+            interval = (interval[1], interval[0])
+
+        distances = np.linspace(interval[0], interval[1], num_steps,
+                                endpoint=True)
+        eval_metric = np.zeros_like(distances)
+        metric_func = metrics.METRICS[metric]
+        # populate metric values
+        for ii, d in enumerate(distances):
+            eval_metric[ii] = metric_func(rfi=self, distance=d, roi=roi)
+
+        return distances, eval_metric
 
     def get_kernel(self, distance):
         """Return the current kernel

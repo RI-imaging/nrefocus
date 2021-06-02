@@ -7,9 +7,8 @@ class LegacyDeprecationWarning(DeprecationWarning):
     pass
 
 
-def minimize_legacy(rf, metric_func, interval, roi=None,
-                    coarse_acc=1, fine_acc=.005,
-                    ret_gradient=False, ret_field=False):
+def minimize_legacy(rf, metric_func, interval, roi=None, coarse_acc=1,
+                    fine_acc=.005, ret_grid=False, ret_field=False):
     """Legacy minimizer
 
     Find the focus by minimizing the `metric` of an image.
@@ -33,22 +32,23 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
         initial step; `coarse_acc=0.5` means 200 fields are computed
     fine_acc: float
         accuracy for fine localization percentage of gradient change
-    ret_gradient:
-        return x and y values of computed gradient
-    ret_field:
+    ret_grid: bool
+        return focus positions and metric values of the coarse
+        grid search
+    ret_field: bool
         return the optimal refocused field for user convenience
 
     Returns
     -------
-    af_field: ndarray
-        Autofocused field
     af_dist: float
         Autofocusing distance [m]
-    gradients: list of tuples of ndarrays, optional
-        Only returned if `ret_gradient` is specified
+    (d_grid, metrid_grid): ndarray
+        Coarse grid search values (only if `ret_grid` is True)
+    af_field: ndarray
+        Autofocused field (only if `ret_field` is True)
     """
     warnings.warn("The 'legacy' minimizer is deprecated, because it is "
-                  "slow and not as accurate as the 'lmfit' minimizer! "
+                  "slower and not as accurate as the 'lmfit' minimizer! "
                   "Please only use 'legacy' to reproduce previous results.",
                   LegacyDeprecationWarning)
 
@@ -96,11 +96,12 @@ def minimize_legacy(rf, metric_func, interval, roi=None,
     af_dist = zf[minid]
 
     ret_val = [af_dist]
+
+    if ret_grid:
+        ret_val.append((zc, gradc))
+
     if ret_field:
         ret_val.append(rf.propagate(af_dist))
-
-    if ret_gradient:
-        ret_val.append([(zc, gradc), (zf, gradf)])
 
     if len(ret_val) == 1:
         ret_val = ret_val[0]

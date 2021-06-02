@@ -80,10 +80,6 @@ def autofocus(field, nm, res, ival, roi=None,
     else:
         minimizer_kwargs = copy.deepcopy(minimizer_kwargs)
 
-    if "ret_field" not in minimizer_kwargs:
-        # return field by default
-        minimizer_kwargs["ret_field"] = True
-
     # use a made-up pixel size so we can use the new `Refocus` interface
     pixel_size = 1
     rf = rfcls(field=field,
@@ -100,6 +96,8 @@ def autofocus(field, nm, res, ival, roi=None,
                         interval=np.array(ival)*rf.pixel_size,
                         roi=roi,
                         minimizer_kwargs=minimizer_kwargs,
+                        ret_grid=False,
+                        ret_field=True,
                         )
 
     return data

@@ -77,7 +77,8 @@ class Refocus(ABC):
         """
 
     def autofocus(self, interval, metric="average gradient", minimizer="lmfit",
-                  minimizer_kwargs=None, roi=None):
+                  roi=None, minimizer_kwargs=None, ret_grid=False,
+                  ret_field=False):
         """Autofocus the initial field
 
         Parameters
@@ -99,14 +100,23 @@ class Refocus(ABC):
             the entire field will be used.
         minimizer_kwargs: dict
             Any additional keyword arguments for the minimizer
+        ret_grid: bool
+            return focus positions and metric values of the coarse
+            grid search
+        ret_field: bool
+            return the optimal refocused field for user convenience
 
         Returns
         -------
         af_distance: float
             Autofocusing distance
+        (d_grid, metrid_grid): ndarray
+            Coarse grid search values (only if `ret_grid` is True)
+        af_field: ndarray
+            Autofocused field (only if `ret_field` is True)
         [other]:
-            Any other objects returned by `minimizer` defined via
-            `minimizer_kwargs`
+            Any other objects returned by `minimizer`; may be definable
+            via `minimizer_kwargs` (depends on minimizer)
         """
         if minimizer_kwargs is None:
             minimizer_kwargs = {}
@@ -136,51 +146,10 @@ class Refocus(ABC):
             metric_func=metric_func,
             interval=interval,
             roi=roi,
+            ret_grid=ret_grid,
+            ret_field=ret_field,
             **minimizer_kwargs)
         return af_data
-
-    def compute_metric(self, interval, metric="average gradient", roi=None,
-                       num_steps=50):
-        """Compute a metric in a certain interval
-
-        This is a convenience method for visualizing the refocusing
-        landscape of a dataset.
-
-        interval: tuple of floats
-            Approximate interval to search for optimal focus [m]
-        metric: str
-            - "average gradient" : average gradient metric of amplitude
-            - "rms contrast" : RMS contrast of phase data
-            - "spectrum" : sum of filtered Fourier coefficients
-        roi: list or tuple or slice or ndarray
-            Region of interest for which the metric will be minimized.
-            This can be either a list [x1, y1, x2, y2], a tuple or
-            list of slices or a numpy indexing array. If not given,
-            the entire field will be used.
-        num_steps: int
-            Total number of steps in `interval` for which to compute
-            the metric.
-
-        Returns
-        -------
-        distances: 1d array of float
-            The refocusing distances defined by `interval` and `num_steps`
-        eval_metric: 1d array of float
-            The computed metric at the specified focusing distances
-        """
-        # flip interval for user convenience
-        if interval[0] > interval[1]:
-            interval = (interval[1], interval[0])
-
-        distances = np.linspace(interval[0], interval[1], num_steps,
-                                endpoint=True)
-        eval_metric = np.zeros_like(distances)
-        metric_func = metrics.METRICS[metric]
-        # populate metric values
-        for ii, d in enumerate(distances):
-            eval_metric[ii] = metric_func(rfi=self, distance=d, roi=roi)
-
-        return distances, eval_metric
 
     def get_kernel(self, distance):
         """Return the current kernel

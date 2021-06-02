@@ -125,6 +125,29 @@ def test_2d_autofocus_fresnel_average_gradient():
 
 @pytest.mark.filterwarnings('ignore::nrefocus.minimizers.mz_legacy.'
                             'LegacyDeprecationWarning')
+def test_2d_autofocus_return_grid_field():
+    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+                                     wavelength=647e-9,
+                                     pixel_size=0.139e-6,
+                                     kernel="helmholtz",
+                                     )
+
+    # attempt to autofocus with standard arguments
+    d, (dgrid, mgrid), nfield = rf.autofocus(
+        metric="average gradient",
+        minimizer="legacy",
+        interval=(-5e-6, 5e-6),
+        ret_grid=True,
+        ret_field=True,
+        )
+
+    idx_metric_min = np.argmin(mgrid)
+    idx_distance = np.argmin(np.abs(dgrid - d))
+    assert idx_metric_min == idx_distance
+
+
+@pytest.mark.filterwarnings('ignore::nrefocus.minimizers.mz_legacy.'
+                            'LegacyDeprecationWarning')
 def test_2d_autofocus_stack_same_dist_nopadding():
     d = 5.5
     nm = 1.5133
@@ -160,7 +183,6 @@ def test_2d_autofocus_stack_same_dist_nopadding():
         roi=None,
         metric=metric,
         minimizer="legacy",
-        minimizer_kwargs={"ret_field": True},
         padding=False,
         same_dist=True,
         num_cpus=1,

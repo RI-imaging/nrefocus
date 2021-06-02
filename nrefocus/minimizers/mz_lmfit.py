@@ -1,5 +1,6 @@
 import copy
 
+import numpy as np
 import lmfit
 
 
@@ -7,12 +8,14 @@ def residuals(params, metric_func, rf, roi):
     return metric_func(rf, distance=params["focus"].value, roi=roi)
 
 
-def minimize_lmfit(rf, metric_func, interval, roi=None, ret_field=False,
-                   **lmfitkw):
+def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
+                   ret_grid=False, ret_field=False):
     """A minimizer that wraps lmfit
 
     Find the focus by minimizing the `metric` of an image
-    This is the implementation of the legacy nrefocus minimizer.
+    A coarse grid search over `interval` with step size
+    of `2*rf.wavelength` is performed, followed by a
+    "regular" minimization for the best candidate.
 
     Parameters
     ----------
@@ -26,35 +29,73 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, ret_field=False,
     roi: tuple of slices or np.ndarray
         Region of interest for which the metric will be minimized.
         If not given, the entire field will be used.
-    ret_field:
-        return the optimal refocused field for user convenience
     lmfitkw:
         Additional keyword arguments for :func:`lmfit.minimize
-        <lmfit.minimizer.minimize>`. The default `method` is "leastsq".
+        <lmfit.minimizer.minimize>` used in the fine grid search.
+        The default `method` is "leastsq".
+    ret_grid: bool
+        return focus positions and metric values of the coarse
+        grid search
+    ret_field: bool
+        return the optimal refocused field for user convenience
 
     Returns
     -------
-    af_field: ndarray
-        Autofocused field
     af_dist: float
         Autofocusing distance [m]
+    (d_grid, metrid_grid): ndarray
+        Coarse grid search values (only if `ret_grid` is True)
+    af_field: ndarray
+        Autofocused field (only if `ret_field` is True)
     """
+    if lmfitkw is None:
+        lmfitkw = {}
     lmfitkw = copy.deepcopy(lmfitkw)
     if "method" not in lmfitkw:
         lmfitkw["method"] = "leastsq"
 
-    params = lmfit.Parameters()
-    params.add("focus", value=0, min=interval[0], max=interval[1])
+    # brute step size
+    brute_step = 2*rf.wavelength
 
-    res = lmfit.minimize(fcn=residuals,
-                         params=params,
-                         kws={"metric_func": metric_func,
-                              "rf": rf,
-                              "roi": roi},
-                         **lmfitkw)
-    af_dist = res.params["focus"].value
+    # initialize fitter
+    params_brute = lmfit.Parameters()
+    params_brute.add("focus",
+                     value=np.mean(interval),
+                     min=interval[0],
+                     max=interval[1],
+                     brute_step=brute_step)
 
+    fitter = lmfit.Minimizer(
+        userfcn=residuals,
+        params=params_brute,
+        fcn_kws={"metric_func": metric_func,
+                 "rf": rf,
+                 "roi": roi},
+    )
+
+    if np.ptp(interval) <= brute_step:
+        # skip the brute step (no step definable)
+        fine_params = params_brute
+    else:
+        # coarse grid search (keep only best result, increasing `keep` does
+        # not help)
+        res_brute = fitter.minimize(method="brute", keep=1)
+        # refine with regular minimizer and new search interval
+        fine_params = copy.deepcopy(res_brute).params
+    fine_params["focus"].min = max(interval[0],
+                                   fine_params["focus"] - 4*rf.wavelength)
+    fine_params["focus"].max = min(interval[1],
+                                   fine_params["focus"] + 4*rf.wavelength)
+    res_fine = fitter.minimize(params=fine_params, **lmfitkw)
+
+    # extract focusing distance
+    af_dist = res_fine.params["focus"].value
+
+    # return values
     ret_val = [af_dist]
+
+    if ret_grid:
+        ret_val.append((res_brute.brute_grid, res_brute.brute_Jout))
 
     if ret_field:
         ret_val.append(rf.propagate(af_dist))

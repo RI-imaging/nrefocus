@@ -34,7 +34,7 @@ class Refocus(ABC):
             - "fresnel": paraxial approximation
               :math:`\exp(-id(k_\mathrm{x}^2+k_\mathrm{y}^2)/2k_\mathrm{m})`
         padding: bool
-            Whether or not to perform zero-padding
+            Whether to perform zero-padding
         """
         super(Refocus, self).__init__()
         self.wavelength = wavelength
@@ -63,12 +63,12 @@ class Refocus(ABC):
         field: 2d complex-valued ndarray
             Input field to be refocused
         padding: bool
-            Whether or not to perform zero-padding
+            Whether to perform zero-padding
 
         Returns
         -------
         fft_field0: 2d complex-valued ndarray
-            Fourier transform the the initial field
+            Fourier transform the initial field
 
         Notes
         -----

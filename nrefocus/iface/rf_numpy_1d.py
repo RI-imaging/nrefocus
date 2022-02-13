@@ -34,7 +34,7 @@ class RefocusNumpy1D(Refocus):
             - "fresnel": paraxial approximation
               :math:`\exp(-idk_\mathrm{x}^2/2k_\mathrm{m})`
         padding: bool
-            Whether or not to perform zero-padding
+            Wheter to perform zero-padding
         """
         super(RefocusNumpy1D, self).__init__(
             field=field,
@@ -54,12 +54,12 @@ class RefocusNumpy1D(Refocus):
         field: 1d complex-valued ndarray
             Input field to be refocused
         padding: bool
-            Whether or not to perform zero-padding
+            Wheter to perform zero-padding
 
         Returns
         -------
         fft_field0: 1d complex-valued ndarray
-            Fourier transform the the initial field
+            Fourier transform the initial field
         """
         if padding:
             field = pad.pad_add(field)

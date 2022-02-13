@@ -18,12 +18,12 @@ class RefocusNumpy(Refocus):
         field: 2d complex-valued ndarray
             Input field to be refocused
         padding: bool
-            Whether or not to perform zero-padding
+            Wheter to perform zero-padding
 
         Returns
         -------
         fft_field0: 2d complex-valued ndarray
-            Fourier transform the the initial field
+            Fourier transform the initial field
         """
         if padding:
             field = pad.pad_add(field)

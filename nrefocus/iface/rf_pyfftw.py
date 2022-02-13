@@ -21,7 +21,7 @@ class RefocusPyFFTW(Refocus):
         field: 2d complex-valued ndarray
             Input field to be refocused
         padding: bool
-            Wheter to perform zero-padding
+            Wheter to perform boundary-padding with linear ramp
 
         Returns
         -------

@@ -34,7 +34,7 @@ class RefocusNumpy1D(Refocus):
             - "fresnel": paraxial approximation
               :math:`\exp(-idk_\mathrm{x}^2/2k_\mathrm{m})`
         padding: bool
-            Wheter to perform zero-padding
+            Wheter to perform boundary-padding with linear ramp
         """
         super(RefocusNumpy1D, self).__init__(
             field=field,
@@ -54,7 +54,7 @@ class RefocusNumpy1D(Refocus):
         field: 1d complex-valued ndarray
             Input field to be refocused
         padding: bool
-            Wheter to perform zero-padding
+            Wheter to perform boundary-padding with linear ramp
 
         Returns
         -------

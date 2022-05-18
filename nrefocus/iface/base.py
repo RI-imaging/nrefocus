@@ -78,13 +78,14 @@ class Refocus(ABC):
 
     def autofocus(self, interval, metric="average gradient", minimizer="lmfit",
                   roi=None, minimizer_kwargs=None, ret_grid=False,
-                  ret_field=False):
+                  ret_field=False, convert_interval_to_pix=False):
         """Autofocus the initial field
 
         Parameters
         ----------
         interval: tuple of floats
-            Approximate interval to search for optimal focus [m]
+            Approximate interval to search for optimal focus [m].
+            Will be converted to pixel values.
         metric: str
             - "average gradient" : average gradient metric of amplitude
             - "rms contrast" : RMS contrast of phase data
@@ -124,6 +125,9 @@ class Refocus(ABC):
         # flip interval for user convenience
         if interval[0] > interval[1]:
             interval = (interval[1], interval[0])
+        if convert_interval_to_pix:
+            # converted interval to pixel values
+            interval = tuple(i/self.pixel_size for i in interval)
 
         # construct the correct ROI
         if (isinstance(roi, (list, tuple))

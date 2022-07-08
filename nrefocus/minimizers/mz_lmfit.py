@@ -5,7 +5,9 @@ import lmfit
 
 
 def residuals(params, metric_func, rf, roi):
-    return metric_func(rf, distance=params["focus"].value, roi=roi)
+    return metric_func(rf,
+                       distance=params["focus_wl"].value * rf.wavelength,
+                       roi=roi)
 
 
 def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
@@ -54,12 +56,15 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
     if "method" not in lmfitkw:
         lmfitkw["method"] = "leastsq"
 
-    # brute step size
-    brute_step = 2*rf.wavelength
+    # normalize fitting interval with wavelength
+    interval = np.array(interval, copy=True) / rf.wavelength
+
+    # brute step size is two wavelengths
+    brute_step = 2
 
     # initialize fitter
     params_brute = lmfit.Parameters()
-    params_brute.add("focus",
+    params_brute.add("focus_wl",
                      value=np.mean(interval),
                      min=interval[0],
                      max=interval[1],
@@ -82,20 +87,25 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
         res_brute = fitter.minimize(method="brute", keep=1)
         # refine with regular minimizer and new search interval
         fine_params = copy.deepcopy(res_brute).params
-    fine_params["focus"].min = max(interval[0],
-                                   fine_params["focus"] - 4*rf.wavelength)
-    fine_params["focus"].max = min(interval[1],
-                                   fine_params["focus"] + 4*rf.wavelength)
+
+    fine_params["focus_wl"].min = max(interval[0],
+                                      fine_params["focus_wl"] - 4)
+    fine_params["focus_wl"].max = min(interval[1],
+                                      fine_params["focus_wl"] + 4)
     res_fine = fitter.minimize(params=fine_params, **lmfitkw)
 
-    # extract focusing distance
-    af_dist = res_fine.params["focus"].value
+    # extract focusing distance [m]
+    af_dist = res_fine.params["focus_wl"].value * rf.wavelength
 
     # return values
     ret_val = [af_dist]
 
     if ret_grid:
-        ret_val.append((res_brute.brute_grid, res_brute.brute_Jout))
+        ret_val.append((
+            # Representation of the evaluation grid.
+            res_brute.brute_grid * rf.wavelength,
+            # Function values at each point of the evaluation grid
+            res_brute.brute_Jout))
 
     if ret_field:
         ret_val.append(rf.propagate(af_dist))

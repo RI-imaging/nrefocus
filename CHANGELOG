@@ -1,3 +1,7 @@
+0.5.1
+ - fix: internally normalize focusing distance to the wavelength for
+   autofocusing with lmfit, because the scale seemed to affect the
+   minimizer convergence (#14)
 0.5.0
  - BREAKING CHANGE: The "legacy" minimizer is deprecated in favor of
    the new lmfit-based minimizer. The default minimizer is now "lmfit".

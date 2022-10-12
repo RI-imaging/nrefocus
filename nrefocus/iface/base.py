@@ -136,8 +136,13 @@ class Refocus(ABC):
             else:
                 raise ValueError(f"Unexpected valud for `roi`: '{roi}'")
         elif roi is None:
-            # Use all the data
-            roi = slice(None, None)
+            if metric == 'spectrum':
+                # spectrum metric doesn't allow roi (even empty slices)
+                roi = None
+            else:
+                # Use all the data
+                roi = slice(None, None)
+
 
         metric_func = metrics.METRICS[metric]
         minimize_func = minimizers.MINIMIZERS[minimizer]

@@ -59,6 +59,7 @@ docs/_build/
 
 _version_save.py
 .env
+venv*
 .eggs
 .pytest_cache
 

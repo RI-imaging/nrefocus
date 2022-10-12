@@ -8,7 +8,7 @@ def metric_rms_contrast(rfi, distance, roi=None, **kwargs):
     -----
     The negative angle of the field is used for contrast estimation.
     """
-    data = -np.anlge(rfi.propagate(distance))
+    data = -np.angle(rfi.propagate(distance))
     av = np.average(data, *kwargs)
     mal = 1 / (data.shape[0] * data.shape[1])
     if roi is not None:

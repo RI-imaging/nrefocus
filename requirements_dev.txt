@@ -1,0 +1,3 @@
+pyfftw>=0.12.0
+pytest
+flake8

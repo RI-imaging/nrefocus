@@ -8,6 +8,10 @@ from .. import metrics
 from .. import minimizers
 
 
+class RefocusROIValueError(ValueError):
+    pass
+
+
 class Refocus(ABC):
     def __init__(self, field, wavelength, pixel_size, medium_index=1.3333,
                  distance=0, kernel="helmholtz", padding=True):
@@ -126,23 +130,24 @@ class Refocus(ABC):
             interval = (interval[1], interval[0])
 
         # construct the correct ROI
-        if (isinstance(roi, (list, tuple))
-                and isinstance(roi[0], numbers.Number)):
-            # We have a list of [x1, y1, x2, y2]
-            if len(roi) == 2:
-                roi = slice(roi[0], roi[1])
-            elif len(roi) == 4:
-                roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
-            else:
-                raise ValueError(f"Unexpected valud for `roi`: '{roi}'")
-        elif roi is None:
-            if metric == 'spectrum':
-                # spectrum metric doesn't allow roi (even empty slices)
-                roi = None
-            else:
-                # Use all the data
-                roi = slice(None, None)
+        # if (isinstance(roi, (list, tuple))
+        #         and isinstance(roi[0], numbers.Number)):
+        #     # We have a list of [x1, y1, x2, y2]
+        #     if len(roi) == 2:
+        #         roi = slice(roi[0], roi[1])
+        #     elif len(roi) == 4:
+        #         roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
+        #     else:
+        #         raise ValueError(f"Unexpected valud for `roi`: '{roi}'")
+        # elif roi is None:
+        #     if metric == 'spectrum':
+        #         # spectrum metric doesn't allow roi (even empty slices)
+        #         roi = None
+        #     else:
+        #         # Use all the data
+        #         roi = slice(None, None)
 
+        roi = self.handle_roi(roi)
 
         metric_func = metrics.METRICS[metric]
         minimize_func = minimizers.MINIMIZERS[minimizer]
@@ -155,6 +160,40 @@ class Refocus(ABC):
             ret_field=ret_field,
             **minimizer_kwargs)
         return af_data
+
+    @staticmethod
+    def handle_roi(roi):
+        """Handle the roi information.
+        roi should be in the numpy indexing order: [top, bottom, left, right]
+
+        Parameters
+        ----------
+        roi : list or tuple
+            Must be of length 4 with all elements being numbers
+
+        Returns
+        -------
+        roi : slice or None
+            If roi is None, then None is returned. If roi is a list or tuple,
+            a slice is returned.
+
+        """
+        # should probably allow slices to just be passed
+        if roi is not None:
+            if not (isinstance(roi, (list, tuple))):
+                raise RefocusROIValueError(
+                    f"The roi should be a list or tuple, "
+                    f"but is {type(roi)=}.")
+            if not all([isinstance(i, numbers.Number) for i in roi]):
+                raise RefocusROIValueError(
+                    f"The roi values should be numbers, "
+                    f"but is {[type(i) for i in roi]=}.")
+            if not len(roi) == 4:
+                raise RefocusROIValueError(
+                    f"The roi should be of length 4, "
+                    f"but is {len(roi)=}.")
+            roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
+        return roi
 
     def get_kernel(self, distance):
         """Return the current kernel

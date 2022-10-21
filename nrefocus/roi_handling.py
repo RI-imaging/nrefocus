@@ -30,13 +30,12 @@ def parse_roi(roi):
 
     """
 
-    # err_descr = ("The roi provided was not correct, "
-    #              "expected either a list or tuple of numbers, "
-    #              "or a list of lists, "
-    #              "or a tuple of slices, "
-    #              # "or a numpy boolean array. "
-    #              f"Got {type(roi)=} instead")
-    err_descr = "checking this string"
+    err_descr = (f"The roi provided was not correct, "
+                 f"expected either a list or tuple of numbers, "
+                 f"or a list of lists, "
+                 f"or a tuple of slices, "
+                 # "or a numpy boolean array. "
+                 f"Got {type(roi)=} instead")
 
     if roi is not None:
         if isinstance(roi, (list, tuple)):

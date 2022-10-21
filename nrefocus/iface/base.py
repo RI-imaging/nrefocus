@@ -1,15 +1,11 @@
 from abc import ABC, abstractmethod
-import numbers
 
 import numexpr as ne
 import numpy as np
 
 from .. import metrics
 from .. import minimizers
-
-
-class RefocusROIValueError(ValueError):
-    pass
+from ..roi_handling import parse_roi
 
 
 class Refocus(ABC):
@@ -147,7 +143,7 @@ class Refocus(ABC):
         #         # Use all the data
         #         roi = slice(None, None)
 
-        roi = self.handle_roi(roi)
+        roi = self.parse_roi(roi)
 
         metric_func = metrics.METRICS[metric]
         minimize_func = minimizers.MINIMIZERS[minimizer]
@@ -162,37 +158,30 @@ class Refocus(ABC):
         return af_data
 
     @staticmethod
-    def handle_roi(roi):
+    def parse_roi(roi):
         """Handle the roi information.
-        roi should be in the numpy indexing order: [top, bottom, left, right]
 
         Parameters
         ----------
         roi : list or tuple
-            Must be of length 4 with all elements being numbers
+            roi should be in the numpy indexing order. Options:
+            list or tuple:
+                [axis_0_start, axis_0_end, axis_1_start, axis_1_end]
+            list of lists or tuple of tuples:
+                [[axis_0_start, axis_0_end],
+                 [axis_1_start, axis_1_end]]
+            tuple of slices:
+                (slice(axis_0_start, axis_0_end),
+                 slice(axis_1_start, axis_1_end))
 
         Returns
         -------
         roi : slice or None
-            If roi is None, then None is returned. If roi is a list or tuple,
-            a slice is returned.
+            If roi is None, then None is returned. If roi is one of the above
+            allowed types, a slice is returned.
 
         """
-        # should probably allow slices to just be passed
-        if roi is not None:
-            if not (isinstance(roi, (list, tuple))):
-                raise RefocusROIValueError(
-                    f"The roi should be a list or tuple, "
-                    f"but is {type(roi)=}.")
-            if not all([isinstance(i, numbers.Number) for i in roi]):
-                raise RefocusROIValueError(
-                    f"The roi values should be numbers, "
-                    f"but is {[type(i) for i in roi]=}.")
-            if not len(roi) == 4:
-                raise RefocusROIValueError(
-                    f"The roi should be of length 4, "
-                    f"but is {len(roi)=}.")
-            roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
+        roi = parse_roi(roi)
         return roi
 
     def get_kernel(self, distance):

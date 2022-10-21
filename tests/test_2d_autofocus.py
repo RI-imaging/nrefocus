@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 import nrefocus
-from nrefocus.iface.base import RefocusROIValueError
+from nrefocus.roi_handling import ROIValueError
 from nrefocus.metrics.mt_spectrum import MetricSpectrumValueError
 
 from test_helper import load_cell
@@ -146,7 +146,7 @@ def test_2d_autofocus_cell_roi():
                                        pixel_size=0.139e-6,
                                        kernel="helmholtz")
 
-    roi_1 = rf_1.handle_roi(roi=roi)
+    roi_1 = rf_1.parse_roi(roi=roi)
     assert roi_1 == slice_roi
 
     field_1 = field[slice_roi]
@@ -167,7 +167,7 @@ def test_2d_autofocus_cell_roi_fail():
 
     # wrong sequence type
     roi_1 = {10, 100, 10, 100}
-    with pytest.raises(RefocusROIValueError):
+    with pytest.raises(ROIValueError):
         d = rf.autofocus(metric='average gradient',
                          minimizer="lmfit",
                          interval=(-5e-6, 5e-6),
@@ -175,7 +175,7 @@ def test_2d_autofocus_cell_roi_fail():
 
     # wrong element type
     roi_2 = ['3', 100, 10, 100]
-    with pytest.raises(RefocusROIValueError):
+    with pytest.raises(ROIValueError):
         d = rf.autofocus(metric='average gradient',
                          minimizer="lmfit",
                          interval=(-5e-6, 5e-6),
@@ -183,7 +183,7 @@ def test_2d_autofocus_cell_roi_fail():
 
     # wrong length
     roi_3 = [10, 100, 100]
-    with pytest.raises(RefocusROIValueError):
+    with pytest.raises(IndexError):
         d = rf.autofocus(metric='average gradient',  # noqa: F841
                          minimizer="lmfit",
                          interval=(-5e-6, 5e-6),

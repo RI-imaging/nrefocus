@@ -126,23 +126,6 @@ class Refocus(ABC):
             interval = (interval[1], interval[0])
 
         # construct the correct ROI
-        # if (isinstance(roi, (list, tuple))
-        #         and isinstance(roi[0], numbers.Number)):
-        #     # We have a list of [x1, y1, x2, y2]
-        #     if len(roi) == 2:
-        #         roi = slice(roi[0], roi[1])
-        #     elif len(roi) == 4:
-        #         roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
-        #     else:
-        #         raise ValueError(f"Unexpected valud for `roi`: '{roi}'")
-        # elif roi is None:
-        #     if metric == 'spectrum':
-        #         # spectrum metric doesn't allow roi (even empty slices)
-        #         roi = None
-        #     else:
-        #         # Use all the data
-        #         roi = slice(None, None)
-
         roi = self.parse_roi(roi)
 
         metric_func = metrics.METRICS[metric]

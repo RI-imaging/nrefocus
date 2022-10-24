@@ -151,8 +151,33 @@ def test_2d_autofocus_cell_roi():
 
     field_1 = field[slice_roi]
     field_2 = field[roi_1]
+    field_3 = field[roi[0]: roi[1], roi[2]: roi[3]]
 
     assert np.array_equal(field_1, field_2)
+    assert np.array_equal(field_1, field_3)
+
+
+def test_2d_autofocus_cell_roi_nones():
+    """Compare the roi given to rf.autofocus with numpy slice"""
+
+    field = load_cell("HL60_field.zip")
+    roi = [None, None, 10, 100]
+    slice_roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
+
+    rf_1 = nrefocus.iface.RefocusNumpy(field=field,
+                                       wavelength=647e-9,
+                                       pixel_size=0.139e-6,
+                                       kernel="helmholtz")
+
+    roi_1 = rf_1.parse_roi(roi=roi)
+    assert roi_1 == slice_roi
+
+    field_1 = field[slice_roi]
+    field_2 = field[roi_1]
+    field_3 = field[roi[0]: roi[1], roi[2]: roi[3]]
+
+    assert np.array_equal(field_1, field_2)
+    assert np.array_equal(field_1, field_3)
 
 
 def test_2d_autofocus_cell_roi_fail():

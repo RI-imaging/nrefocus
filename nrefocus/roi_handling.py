@@ -20,7 +20,7 @@ def parse_roi(roi):
         tuple of slices:
             (slice(axis_0_start, axis_0_end),
              slice(axis_1_start, axis_1_end))
-            numpy boolean array (not yet supported)
+        numpy boolean array (not yet supported)
         Use None to indicate no slicing:
             [None, None, axis_1_start, axis_1_end]
 

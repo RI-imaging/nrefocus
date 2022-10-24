@@ -10,50 +10,54 @@ def parse_roi(roi):
 
     Parameters
     ----------
-    roi : see type options below
-        roi should be in the numpy indexing order. Options:
-        list or tuple:
-            [axis_0_start, axis_0_end, axis_1_start, axis_1_end]
-        list of lists or tuple of tuples:
-            [[axis_0_start, axis_0_end],
-             [axis_1_start, axis_1_end]]
-        tuple of slices:
+    roi: list or tuple or ndarray or list of slices
+        Region of interest for which the metric will be minimized. The below
+        axes below are numpy axes. Options are:
+        list or tuple or numpy indexing array (old behaviour):
+            [axis_1_start, axis_0_start, axis_1_end, axis_0_end]
+            None can be used if no slicing is desired eg:
+            [None, None, axis_1_end, axis_0_end]
+        list of slices (will be given as is for slicing):
             (slice(axis_0_start, axis_0_end),
              slice(axis_1_start, axis_1_end))
-        numpy boolean array (not yet supported)
-        Use None to indicate no slicing:
-            [None, None, axis_1_start, axis_1_end]
+        None
+            the entire field will be used.
+
+    Notes
+    -----
+    The old `roi` parameter list order was given as:
+    [x1, y1, x2, y2] which is consistent with the new order:
+    [axis_1_start, axis_0_start, axis_1_end, axis_0_end] and is therefore
+    not a breaking change.
+    For the `roi` param, numpy boolean (mask) array are not yet supported.
+    For 1d slices use a list, not a tuple. This is
+    because python takes a tuple of a single slice as a slice.
 
     Returns
     -------
-    roi : slice or None
-        If roi is None, then None is returned. If roi is one of the above
-        allowed types, a slice is returned.
+    roi : slices
 
     """
+    err_descr = f"Unexpected value for `roi`: '{roi}'"
 
-    err_descr = (f"The roi provided was not correct, "
-                 f"expected either a list or tuple of numbers, "
-                 f"or a list of lists, "
-                 f"or a tuple of slices, "
-                 # "or a numpy boolean array. "
-                 f"Got {type(roi)=} instead")
-
-    if roi is not None:
-        if isinstance(roi, (list, tuple)):
-            if all(isinstance(s, slice) for s in roi):
-                # can be directly used
-                pass
-            elif all(isinstance(s, (list, tuple)) for s in roi):
-                # assume we have a list of lists
-                roi = (slice(roi[0][0], roi[0][1]),
-                       slice(roi[1][0], roi[1][1]))
-            elif all(isinstance(s, (numbers.Number, type(None))) for s in roi):
-                # assume we have a list or tuple of numbers
-                roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
-            # allow for boolean array here
-            else:
-                raise ROIValueError(err_descr)
+    if roi is None:
+        # Use all the data
+        pass
+    elif all(isinstance(s, slice) for s in roi):
+        # will be directly used
+        pass
+    elif (isinstance(roi, (list, tuple))
+            and all(isinstance(r, (numbers.Number, type(None))) for r in roi)):
+        # We have a list of numbers or None or mix
+        if len(roi) == 2:
+            # 1d slicing [axis_0_start, axis_0_end]
+            roi = slice(roi[0], roi[1])
+        elif len(roi) == 4:
+            # 2d slicing
+            roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
         else:
             raise ROIValueError(err_descr)
+    else:
+        raise ROIValueError(err_descr)
+
     return roi

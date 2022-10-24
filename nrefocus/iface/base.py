@@ -93,11 +93,18 @@ class Refocus(ABC):
             - "legacy": custom nrefocus minimizer
             - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize
               <lmfit.minimizer.minimize>`)
-        roi: list or tuple or slice or ndarray
-            Region of interest for which the metric will be minimized.
-            This can be either a list [x1, y1, x2, y2], a tuple or
-            list of slices or a numpy indexing array. If not given,
-            the entire field will be used.
+        roi: list or tuple or ndarray or list of slices
+            Region of interest for which the metric will be minimized. The below
+            axes below are numpy axes. Options are:
+            list or tuple or numpy indexing array (old behaviour):
+                [axis_1_start, axis_0_start, axis_1_end, axis_0_end]
+                None can be used if no slicing is desired eg:
+                [None, None, axis_1_end, axis_0_end]
+            list of slices (will be given as is for slicing):
+                (slice(axis_0_start, axis_0_end),
+                 slice(axis_1_start, axis_1_end))
+            None
+                the entire field will be used.
         minimizer_kwargs: dict
             Any additional keyword arguments for the minimizer
         ret_grid: bool
@@ -142,30 +149,7 @@ class Refocus(ABC):
 
     @staticmethod
     def parse_roi(roi):
-        """Handle the roi information.
-
-        Parameters
-        ----------
-        roi : list or tuple
-            roi should be in the numpy indexing order. Options:
-            list or tuple:
-                [axis_0_start, axis_0_end, axis_1_start, axis_1_end]
-            list of lists or tuple of tuples:
-                [[axis_0_start, axis_0_end],
-                 [axis_1_start, axis_1_end]]
-            tuple of slices:
-                (slice(axis_0_start, axis_0_end),
-                 slice(axis_1_start, axis_1_end))
-
-        Returns
-        -------
-        roi : slice or None
-            If roi is None, then None is returned. If roi is one of the above
-            allowed types, a slice is returned.
-
-        """
-        roi = parse_roi(roi)
-        return roi
+        return parse_roi(roi)
 
     def get_kernel(self, distance):
         """Return the current kernel

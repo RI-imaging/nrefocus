@@ -16,6 +16,18 @@ def test_parse_roi_single_list():
     assert roi_actual == roi_expected
 
 
+def test_parse_roi_single_list_nones():
+    """Check if a single list works with None"""
+
+    roi = [None, 4, 5, None]
+    roi_expected = (slice(None, 4, None),
+                    slice(5, None, None))
+
+    roi_actual = parse_roi(roi)
+
+    assert roi_actual == roi_expected
+
+
 def test_parse_roi_single_tuple():
     """Check if a single tuple works"""
 
@@ -64,6 +76,18 @@ def test_parse_roi_list_of_tuples():
     assert roi_actual == roi_expected
 
 
+def test_parse_roi_list_of_tuples_nones():
+    """Check if a single tuple works with None"""
+
+    roi = [(None, None), (5, 6)]
+    roi_expected = (slice(None, None, None),
+                    slice(5, 6, None))
+
+    roi_actual = parse_roi(roi)
+
+    assert roi_actual == roi_expected
+
+
 def test_parse_roi_tuple_of_slices():
     """Check if a single tuple works"""
 
@@ -82,6 +106,18 @@ def test_parse_roi_list_of_slices():
     roi = [slice(2, 4), slice(5, 6)]
     roi_expected = [slice(2, 4, None),
                     slice(5, 6, None)]
+
+    roi_actual = parse_roi(roi)
+
+    assert roi_actual == roi_expected
+
+
+def test_parse_roi_list_of_slices_nones():
+    """Check if a single tuple works with None"""
+
+    roi = [slice(None, 4), slice(None, 6)]
+    roi_expected = [slice(None, 4, None),
+                    slice(None, 6, None)]
 
     roi_actual = parse_roi(roi)
 

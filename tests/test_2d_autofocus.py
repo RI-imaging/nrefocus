@@ -15,14 +15,14 @@ from test_helper import load_cell
         ("average gradient", None,
          -8.781356558557544e-07,
          1.0455603934920419 - 0.020475662236633177j),
-        ("average gradient", [10, 100, 10, 100],
+        ("average gradient", [10, 10, 100, 100],
          -8.795139152651752e-07,
          1.0455078513415523 - 0.020478153810279703j),
 
         ("rms contrast", None,
          4.999999999974661e-06,
          1.0505454858452632 - 0.022163822293036956j),
-        ("rms contrast", [10, 100, 10, 100],
+        ("rms contrast", [10, 10, 100, 100],
          4.999999999974661e-06,
          1.0505454858452632 - 0.022163822293036956j),
 
@@ -139,7 +139,7 @@ def test_2d_autofocus_cell_roi():
 
     field = load_cell("HL60_field.zip")
     roi = [10, 100, 10, 100]
-    slice_roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
+    slice_roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
 
     rf_1 = nrefocus.iface.RefocusNumpy(field=field,
                                        wavelength=647e-9,
@@ -151,7 +151,7 @@ def test_2d_autofocus_cell_roi():
 
     field_1 = field[slice_roi]
     field_2 = field[roi_1]
-    field_3 = field[roi[0]: roi[1], roi[2]: roi[3]]
+    field_3 = field[roi[0]: roi[2], roi[1]: roi[3]]
 
     assert np.array_equal(field_1, field_2)
     assert np.array_equal(field_1, field_3)
@@ -162,7 +162,7 @@ def test_2d_autofocus_cell_roi_nones():
 
     field = load_cell("HL60_field.zip")
     roi = [None, None, 10, 100]
-    slice_roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
+    slice_roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
 
     rf_1 = nrefocus.iface.RefocusNumpy(field=field,
                                        wavelength=647e-9,
@@ -174,7 +174,7 @@ def test_2d_autofocus_cell_roi_nones():
 
     field_1 = field[slice_roi]
     field_2 = field[roi_1]
-    field_3 = field[roi[0]: roi[1], roi[2]: roi[3]]
+    field_3 = field[roi[0]: roi[2], roi[1]: roi[3]]
 
     assert np.array_equal(field_1, field_2)
     assert np.array_equal(field_1, field_3)
@@ -208,7 +208,7 @@ def test_2d_autofocus_cell_roi_fail():
 
     # wrong length
     roi_3 = [10, 100, 100]
-    with pytest.raises(IndexError):
+    with pytest.raises(ROIValueError):
         d = rf.autofocus(metric='average gradient',  # noqa: F841
                          minimizer="lmfit",
                          interval=(-5e-6, 5e-6),

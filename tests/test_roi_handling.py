@@ -6,10 +6,11 @@ from nrefocus.roi_handling import parse_roi, ROIValueError
 
 def test_parse_roi_single_list():
     """Check if a single list works"""
-
-    roi = [2, 4, 5, 6]
-    roi_expected = (slice(2, 4, None),
-                    slice(5, 6, None))
+    # [axis_1_start, axis_0_start, axis_1_end, axis_0_end]
+    roi = [5, 2, 6, 4]
+    # will result in xy
+    roi_expected = (slice(5, 6, None),
+                    slice(2, 4, None))
 
     roi_actual = parse_roi(roi)
 
@@ -19,87 +20,27 @@ def test_parse_roi_single_list():
 def test_parse_roi_single_list_nones():
     """Check if a single list works with None"""
 
-    roi = [None, 4, 5, None]
-    roi_expected = (slice(None, 4, None),
-                    slice(5, None, None))
+    roi = [None, 2, 6, None]
+    roi_expected = (slice(None, 6, None),
+                    slice(2, None, None))
 
     roi_actual = parse_roi(roi)
 
     assert roi_actual == roi_expected
 
 
-def test_parse_roi_single_tuple():
-    """Check if a single tuple works"""
-
-    roi = [2, 4, 5, 6]
-    roi_expected = (slice(2, 4, None),
-                    slice(5, 6, None))
-
-    roi_actual = parse_roi(roi)
-
-    assert roi_actual == roi_expected
-
-
-def test_parse_roi_list_of_lists():
-    """Check if a single tuple works"""
-
-    roi = [[2, 4], [5, 6]]
-    roi_expected = (slice(2, 4, None),
-                    slice(5, 6, None))
+def test_parse_roi_list_1d():
+    """Check if a single list works for 1d roi"""
+    # [axis_0_start, axis_0_end]
+    roi = [2, 6]
+    roi_expected = slice(2, 6)
 
     roi_actual = parse_roi(roi)
 
     assert roi_actual == roi_expected
 
 
-def test_parse_roi_tuple_of_tuples():
-    """Check if a single tuple works"""
-
-    roi = ((2, 4), (5, 6))
-    roi_expected = (slice(2, 4, None),
-                    slice(5, 6, None))
-
-    roi_actual = parse_roi(roi)
-
-    assert roi_actual == roi_expected
-
-
-def test_parse_roi_list_of_tuples():
-    """Check if a single tuple works"""
-
-    roi = [(2, 4), (5, 6)]
-    roi_expected = (slice(2, 4, None),
-                    slice(5, 6, None))
-
-    roi_actual = parse_roi(roi)
-
-    assert roi_actual == roi_expected
-
-
-def test_parse_roi_list_of_tuples_nones():
-    """Check if a single tuple works with None"""
-
-    roi = [(None, None), (5, 6)]
-    roi_expected = (slice(None, None, None),
-                    slice(5, 6, None))
-
-    roi_actual = parse_roi(roi)
-
-    assert roi_actual == roi_expected
-
-
-def test_parse_roi_tuple_of_slices():
-    """Check if a single tuple works"""
-
-    roi = (slice(2, 4), slice(5, 6))
-    roi_expected = (slice(2, 4, None),
-                    slice(5, 6, None))
-
-    roi_actual = parse_roi(roi)
-
-    assert roi_actual == roi_expected
-
-
+# New behaviour using slices
 def test_parse_roi_list_of_slices():
     """Check if a single tuple works"""
 
@@ -124,19 +65,30 @@ def test_parse_roi_list_of_slices_nones():
     assert roi_actual == roi_expected
 
 
-def test_parse_roi_error_as_nonlist():
+def test_parse_roi_slice_1d():
+    """Check if a single list works for 1d roi"""
+
+    roi = [slice(2, 6)]
+    roi_expected = [slice(2, 6)]
+
+    roi_actual = parse_roi(roi)
+
+    assert roi_actual == roi_expected
+
+
+def test_parse_roi_error_slice_only():
     """Check if a single tuple works"""
 
     roi = slice(2, 4)
 
-    with pytest.raises(ROIValueError):
+    with pytest.raises(TypeError):
         _ = parse_roi(roi)
 
 
-def test_parse_roi_error_as_list():
+def test_parse_roi_error_list():
     """Check if a single tuple works"""
 
-    roi = [np.array([2, 4]), np.array([5, 6])]
+    roi = [[2, 4], [5, 6]]
 
     with pytest.raises(ROIValueError):
         _ = parse_roi(roi)

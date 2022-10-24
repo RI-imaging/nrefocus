@@ -10,7 +10,7 @@ def parse_roi(roi):
 
     Parameters
     ----------
-    roi : list or tuple
+    roi : see type options below
         roi should be in the numpy indexing order. Options:
         list or tuple:
             [axis_0_start, axis_0_end, axis_1_start, axis_1_end]
@@ -21,6 +21,8 @@ def parse_roi(roi):
             (slice(axis_0_start, axis_0_end),
              slice(axis_1_start, axis_1_end))
             numpy boolean array (not yet supported)
+        Use None to indicate no slicing:
+            [None, None, axis_1_start, axis_1_end]
 
     Returns
     -------
@@ -39,16 +41,16 @@ def parse_roi(roi):
 
     if roi is not None:
         if isinstance(roi, (list, tuple)):
-            if all(isinstance(s, (list, tuple)) for s in roi):
+            if all(isinstance(s, slice) for s in roi):
+                # can be directly used
+                pass
+            elif all(isinstance(s, (list, tuple)) for s in roi):
                 # assume we have a list of lists
                 roi = (slice(roi[0][0], roi[0][1]),
                        slice(roi[1][0], roi[1][1]))
-            elif all(isinstance(s, numbers.Number) for s in roi):
+            elif all(isinstance(s, (numbers.Number, type(None))) for s in roi):
                 # assume we have a list or tuple of numbers
                 roi = (slice(roi[0], roi[1]), slice(roi[2], roi[3]))
-            elif all(isinstance(s, slice) for s in roi):
-                # can be directly used
-                pass
             # allow for boolean array here
             else:
                 raise ROIValueError(err_descr)

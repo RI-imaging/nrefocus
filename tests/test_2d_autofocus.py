@@ -25,6 +25,25 @@ def test_2d_autofocus_cell_helmholtz_average_gradient():
                        atol=0)
 
 
+def test_2d_autofocus_cell_helmholtz_std_gradient():
+    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+                                     wavelength=647e-9,
+                                     pixel_size=0.139e-6,
+                                     kernel="helmholtz",
+                                     )
+
+    # attempt to autofocus with standard arguments
+    d = rf.autofocus(metric="std gradient",
+                     minimizer="lmfit",
+                     interval=(-5e-6, 5e-6))
+    assert np.allclose(d, -1.027262300918845e-06, atol=0)
+
+    nfield = rf.propagate(d)
+    assert np.allclose(nfield[10, 10],
+                       1.0397563526680962 - 0.023285740461459085j,
+                       atol=0)
+
+
 def test_2d_autofocus_return_field():
     rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
                                      wavelength=647e-9,
@@ -38,7 +57,7 @@ def test_2d_autofocus_return_field():
         minimizer="lmfit",
         interval=(-5e-6, 5e-6),
         ret_field=True,
-        )
+    )
 
     nfield2 = rf.propagate(d)
     assert np.all(nfield == nfield2)
@@ -58,7 +77,7 @@ def test_2d_autofocus_return_grid_field():
         interval=(-5e-6, 5e-6),
         ret_grid=True,
         ret_field=True,
-        )
+    )
 
     idx_metric_min = np.argmin(mgrid)
     idx_distance = np.argmin(np.abs(dgrid - d))
@@ -87,5 +106,5 @@ def test_2d_autofocus_small_interval():
     rf.autofocus(
         metric="average gradient",
         minimizer="lmfit",
-        interval=(0, 1.9*wavelength),
-        )
+        interval=(0, 1.9 * wavelength),
+    )

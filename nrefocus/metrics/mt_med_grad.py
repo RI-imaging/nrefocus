@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def metric_std_gradient(rfi, distance, roi=None, **kwargs):
-    """Compute standard deviation (std) gradient norm of the amplitude
+def metric_med_gradient(rfi, distance, roi=None, **kwargs):
+    """Compute median gradient norm of the amplitude
 
     Notes
     -----
@@ -11,4 +11,4 @@ def metric_std_gradient(rfi, distance, roi=None, **kwargs):
     data = np.abs(rfi.propagate(distance))
     if roi is not None:
         data = data[roi]
-    return np.std(np.array(np.gradient(data)))
+    return np.median(np.array(np.gradient(data))**2)

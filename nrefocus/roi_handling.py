@@ -10,28 +10,27 @@ def parse_roi(roi):
 
     Parameters
     ----------
-    roi: list or tuple or ndarray or list of slices
-        Region of interest for which the metric will be minimized. The below
-        axes below are numpy axes. Options are:
+    roi: list or tuple or slice or ndarray
+        Region of interest for which the metric will be minimized.
+        The axes below use the numpy indexing order.
+        Options are:
+
         list or tuple or numpy indexing array (old behaviour):
-            [axis_1_start, axis_0_start, axis_1_end, axis_0_end]
-            None can be used if no slicing is desired eg:
-            [None, None, axis_1_end, axis_0_end]
-        list of slices (will be given as is for slicing):
-            (slice(axis_0_start, axis_0_end),
-             slice(axis_1_start, axis_1_end))
+            [axis_0_start, axis_1_start, axis_0_end, axis_1_end]
+            None can be used if no slicing is desired eg.:
+            [None, None, axis_0_end, axis_1_end]
+        list or tuple of slices (will be passed directly as is):
+            (slice(axis_0_start, axis_0_end), slice(axis_1_start, axis_1_end))
         None
-            the entire field will be used.
+            The entire field will be used.
 
     Notes
     -----
-    The old `roi` parameter list order was given as:
-    [x1, y1, x2, y2] which is consistent with the new order:
-    [axis_1_start, axis_0_start, axis_1_end, axis_0_end] and is therefore
-    not a breaking change.
+    The old `roi` parameter list order was incorrect and given as:
+    [x1, y1, x2, y2]. This is inconsistent with the new order:
+    [axis_0_start, axis_1_start, axis_0_end, axis_1_end] and may require
+    changes to old scripts.
     For the `roi` param, numpy boolean (mask) array are not yet supported.
-    For 1d slices use a list, not a tuple. This is
-    because python takes a tuple of a single slice as a slice.
 
     Returns
     -------
@@ -43,9 +42,12 @@ def parse_roi(roi):
     if roi is None:
         # Use all the data
         pass
-    elif all(isinstance(s, slice) for s in roi):
+    elif isinstance(roi, slice):
         # will be directly used
         pass
+    elif all(isinstance(s, slice) for s in roi):
+        # will be directly used
+        roi = tuple(roi)
     elif (isinstance(roi, (list, tuple))
             and all(isinstance(r, (numbers.Number, type(None))) for r in roi)):
         # We have a list of numbers or None or mix

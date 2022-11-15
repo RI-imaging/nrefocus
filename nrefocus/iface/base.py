@@ -93,18 +93,18 @@ class Refocus(ABC):
             - "legacy": custom nrefocus minimizer
             - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize
               <lmfit.minimizer.minimize>`)
-        roi: list or tuple or ndarray or list of slices
-            Region of interest for which the metric will be minimized. The below
-            axes below are numpy axes. Options are:
+        roi: list or tuple or slice or ndarray
+            Region of interest for which the metric will be minimized.
+            The axes below use the numpy indexing order. Options are:
             list or tuple or numpy indexing array (old behaviour):
-                [axis_1_start, axis_0_start, axis_1_end, axis_0_end]
-                None can be used if no slicing is desired eg:
-                [None, None, axis_1_end, axis_0_end]
-            list of slices (will be given as is for slicing):
+                [axis_0_start, axis_1_start, axis_0_end, axis_1_end]
+                None can be used if no slicing is desired eg.:
+                [None, None, axis_0_end, axis_1_end]
+            list or tuple of slices (will be passed directly as is):
                 (slice(axis_0_start, axis_0_end),
                  slice(axis_1_start, axis_1_end))
             None
-                the entire field will be used.
+                The entire field will be used.
         minimizer_kwargs: dict
             Any additional keyword arguments for the minimizer
         ret_grid: bool
@@ -124,6 +124,7 @@ class Refocus(ABC):
         [other]:
             Any other objects returned by `minimizer`; may be definable
             via `minimizer_kwargs` (depends on minimizer)
+
         """
         if minimizer_kwargs is None:
             minimizer_kwargs = {}

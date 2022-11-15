@@ -95,7 +95,8 @@ class Refocus(ABC):
               <lmfit.minimizer.minimize>`)
         roi: list or tuple or slice or ndarray
             Region of interest for which the metric will be minimized.
-            The axes below use the numpy indexing order. Options are:
+            The axes below use the numpy indexing order.
+            Options are:
             list or tuple or numpy indexing array (old behaviour):
                 [axis_0_start, axis_1_start, axis_0_end, axis_1_end]
                 None can be used if no slicing is desired eg.:

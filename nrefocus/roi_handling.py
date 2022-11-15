@@ -14,13 +14,13 @@ def parse_roi(roi):
         Region of interest for which the metric will be minimized.
         The axes below use the numpy indexing order.
         Options are:
-
         list or tuple or numpy indexing array (old behaviour):
             [axis_0_start, axis_1_start, axis_0_end, axis_1_end]
             None can be used if no slicing is desired eg.:
             [None, None, axis_0_end, axis_1_end]
         list or tuple of slices (will be passed directly as is):
-            (slice(axis_0_start, axis_0_end), slice(axis_1_start, axis_1_end))
+            (slice(axis_0_start, axis_0_end),
+             slice(axis_1_start, axis_1_end))
         None
             The entire field will be used.
 

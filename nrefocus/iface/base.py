@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-import numbers
 
 import numexpr as ne
 import numpy as np
 
 from .. import metrics
 from .. import minimizers
+from ..roi_handling import parse_roi
 
 
 class Refocus(ABC):
@@ -95,9 +95,17 @@ class Refocus(ABC):
               <lmfit.minimizer.minimize>`)
         roi: list or tuple or slice or ndarray
             Region of interest for which the metric will be minimized.
-            This can be either a list [x1, y1, x2, y2], a tuple or
-            list of slices or a numpy indexing array. If not given,
-            the entire field will be used.
+            The axes below use the numpy indexing order.
+            Options are:
+            list or tuple or numpy indexing array (old behaviour):
+                [axis_0_start, axis_1_start, axis_0_end, axis_1_end]
+                None can be used if no slicing is desired eg.:
+                [None, None, axis_0_end, axis_1_end]
+            list or tuple of slices (will be passed directly as is):
+                (slice(axis_0_start, axis_0_end),
+                 slice(axis_1_start, axis_1_end))
+            None
+                The entire field will be used.
         minimizer_kwargs: dict
             Any additional keyword arguments for the minimizer
         ret_grid: bool
@@ -117,6 +125,7 @@ class Refocus(ABC):
         [other]:
             Any other objects returned by `minimizer`; may be definable
             via `minimizer_kwargs` (depends on minimizer)
+
         """
         if minimizer_kwargs is None:
             minimizer_kwargs = {}
@@ -126,18 +135,7 @@ class Refocus(ABC):
             interval = (interval[1], interval[0])
 
         # construct the correct ROI
-        if (isinstance(roi, (list, tuple))
-                and isinstance(roi[0], numbers.Number)):
-            # We have a list of [x1, y1, x2, y2]
-            if len(roi) == 2:
-                roi = slice(roi[0], roi[1])
-            elif len(roi) == 4:
-                roi = (slice(roi[0], roi[2]), slice(roi[1], roi[3]))
-            else:
-                raise ValueError(f"Unexpected valud for `roi`: '{roi}'")
-        elif roi is None:
-            # Use all the data
-            roi = slice(None, None)
+        roi = self.parse_roi(roi)
 
         metric_func = metrics.METRICS[metric]
         minimize_func = minimizers.MINIMIZERS[minimizer]
@@ -150,6 +148,10 @@ class Refocus(ABC):
             ret_field=ret_field,
             **minimizer_kwargs)
         return af_data
+
+    @staticmethod
+    def parse_roi(roi):
+        return parse_roi(roi)
 
     def get_kernel(self, distance):
         """Return the current kernel

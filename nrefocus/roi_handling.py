@@ -24,14 +24,6 @@ def parse_roi(roi):
         None
             The entire field will be used.
 
-    Notes
-    -----
-    The old `roi` parameter list order was incorrect and given as:
-    [x1, y1, x2, y2]. This is inconsistent with the new order:
-    [axis_0_start, axis_1_start, axis_0_end, axis_1_end] and may require
-    changes to old scripts.
-    For the `roi` param, numpy boolean (mask) array are not yet supported.
-
     Returns
     -------
     roi : slices

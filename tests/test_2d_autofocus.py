@@ -67,25 +67,26 @@ def test_2d_autofocus_cell_helmholtz_metric_roi(
                        atol=0)
 
 
-def test_2d_autofocus_cell_helmholtz_spectrum_roi():
-    """Show that the spectrum metric doesn't allow roi."""
+def test_2d_autofocus_cell_helmholtz_average_gradient():
+    """attempt to autofocus with standard arguments"""
     rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
                                      )
+    d = rf.autofocus(metric="average gradient",
+                     minimizer="lmfit",
+                     interval=(-5e-6, 5e-6))
+    assert np.allclose(d, -8.781335587979859e-07, atol=0)
 
-    # attempt to autofocus with spectrum metric with an roi
-    with pytest.raises(MetricSpectrumValueError):
-        # doesn't allow an roi with spectrum
-        d = rf.autofocus(metric="spectrum",  # noqa: F841
-                         minimizer="lmfit",
-                         interval=(-5e-6, 5e-6),
-                         roi=[10, 100, 10, 100])
+    nfield = rf.propagate(d)
+    assert np.allclose(nfield[10, 10],
+                       1.0455597758297575 - 0.02047568956477154j,
+                       atol=0)
 
 
 def test_2d_autofocus_cell_helmholtz_std_gradient():
-    # attempt to autofocus with standard arguments
+    """attempt to autofocus with std gradient"""
     rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
@@ -103,7 +104,7 @@ def test_2d_autofocus_cell_helmholtz_std_gradient():
 
 
 def test_2d_autofocus_cell_helmholtz_med_gradient():
-    # attempt to autofocus with standard arguments
+    """attempt to autofocus with med gradient"""
     rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
@@ -118,6 +119,23 @@ def test_2d_autofocus_cell_helmholtz_med_gradient():
     assert np.allclose(nfield[10, 10],
                        1.0422687231100252 - 0.01375193149358192j,
                        atol=0)
+
+
+def test_2d_autofocus_cell_helmholtz_spectrum_roi():
+    """Show that the spectrum metric doesn't allow roi."""
+    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+                                     wavelength=647e-9,
+                                     pixel_size=0.139e-6,
+                                     kernel="helmholtz",
+                                     )
+
+    # attempt to autofocus with spectrum metric with an roi
+    with pytest.raises(MetricSpectrumValueError):
+        # doesn't allow an roi with spectrum
+        d = rf.autofocus(metric="spectrum",  # noqa: F841
+                         minimizer="lmfit",
+                         interval=(-5e-6, 5e-6),
+                         roi=[10, 100, 10, 100])
 
 
 def test_2d_autofocus_return_field():

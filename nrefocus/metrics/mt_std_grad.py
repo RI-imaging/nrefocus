@@ -2,7 +2,7 @@ import numpy as np
 
 
 def metric_std_gradient(rfi, distance, roi=None, **kwargs):
-    """Compute standard deviation (std) gradient norm of the amplitude
+    """Compute standard deviation (std) gradient of the amplitude
 
     Notes
     -----

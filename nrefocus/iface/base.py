@@ -90,7 +90,7 @@ class Refocus(ABC):
             - "rms contrast" : RMS contrast of phase data
             - "spectrum" : sum of filtered Fourier coefficients
             - "std gradient" : standard deviation of gradient of amplitude
-
+            - "med gradient" : median gradient metric of amplitude
         minimizer: str
             - "legacy": custom nrefocus minimizer
             - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize

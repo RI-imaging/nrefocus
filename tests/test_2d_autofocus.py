@@ -30,6 +30,20 @@ from test_helper import load_cell
          -5e-06,
          1.026638094465674 - 0.02923150877539289j),
         # roi doesn't work with spectrum, see test below
+
+        ("std gradient", None,
+         -8.781518791456171e-07,
+         1.0455597758297575 - 0.02047568956477154j),
+        ("std gradient", [10, 10, 100, 100],
+         -8.796339535413204e-07,
+         1.0455032687136372 - 0.02047838714147014j),
+
+        ("med gradient", None,
+         2.8018890771670997e-07,
+         1.0422687231100252 - 0.01375193149358192j),
+        ("med gradient", [10, 10, 100, 100],
+         2.18410667763866e-07,
+         1.042245183739662 - 0.015481320442455255j),
     ])
 def test_2d_autofocus_cell_helmholtz_metric_roi(
         metric, roi, expected_d, expected_field_point):
@@ -85,6 +99,24 @@ def test_2d_autofocus_cell_helmholtz_std_gradient():
     nfield = rf.propagate(d)
     assert np.allclose(nfield[10, 10],
                        1.0455597758297575 - 0.02047568956477154j,
+                       atol=0)
+
+
+def test_2d_autofocus_cell_helmholtz_med_gradient():
+    # attempt to autofocus with standard arguments
+    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+                                     wavelength=647e-9,
+                                     pixel_size=0.139e-6,
+                                     kernel="helmholtz",
+                                     )
+    d = rf.autofocus(metric="med gradient",
+                     minimizer="lmfit",
+                     interval=(-5e-6, 5e-6))
+    assert np.allclose(d, 2.8018890771670997e-07, atol=0)
+
+    nfield = rf.propagate(d)
+    assert np.allclose(nfield[10, 10],
+                       1.0422687231100252 - 0.01375193149358192j,
                        atol=0)
 
 

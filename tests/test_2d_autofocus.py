@@ -135,6 +135,42 @@ def test_2d_autofocus_cell_helmholtz_spectrum_roi():
                          roi=[10, 100, 10, 100])
 
 
+def test_2d_autofocus_cell_helmholtz_std_gradient():
+    # attempt to autofocus with standard arguments
+    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+                                     wavelength=647e-9,
+                                     pixel_size=0.139e-6,
+                                     kernel="helmholtz",
+                                     )
+    d = rf.autofocus(metric="std gradient",
+                     minimizer="lmfit",
+                     interval=(-5e-6, 5e-6))
+    assert np.allclose(d, -8.781518791456171e-07, atol=0)
+
+    nfield = rf.propagate(d)
+    assert np.allclose(nfield[10, 10],
+                       1.0455597758297575 - 0.02047568956477154j,
+                       atol=0)
+
+
+def test_2d_autofocus_cell_helmholtz_med_gradient():
+    # attempt to autofocus with standard arguments
+    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+                                     wavelength=647e-9,
+                                     pixel_size=0.139e-6,
+                                     kernel="helmholtz",
+                                     )
+    d = rf.autofocus(metric="med gradient",
+                     minimizer="lmfit",
+                     interval=(-5e-6, 5e-6))
+    assert np.allclose(d, 2.8018890771670997e-07, atol=0)
+
+    nfield = rf.propagate(d)
+    assert np.allclose(nfield[10, 10],
+                       1.0422687231100252 - 0.01375193149358192j,
+                       atol=0)
+
+
 def test_2d_autofocus_return_field():
     """Basic check of the field after autofocus"""
     rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),

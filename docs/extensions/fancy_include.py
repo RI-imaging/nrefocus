@@ -43,6 +43,9 @@ class IncludeDirective(Directive):
     def run(self):
         path = self.state.document.settings.env.config.fancy_include_path
         full_path = op.join(path, self.arguments[0])
+        # for windows builds, we need to replace "\" with "/" so that
+        # sphinx reads the rst file correctly (it replaces "\" with "")
+        full_path = full_path.replace("\\", "/")
 
         with io.open(full_path, "r") as myfile:
             text = myfile.read()

@@ -308,4 +308,3 @@ def test_2d_autofocus_cell_roi_fail():
                          minimizer="lmfit",
                          interval=(-5e-6, 5e-6),
                          roi=roi_4)
-

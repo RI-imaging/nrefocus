@@ -34,4 +34,3 @@ for i, mt in enumerate(my_metrics):
 fig.suptitle("Comparison of Metrics")
 fig.tight_layout()
 plt.show()
-

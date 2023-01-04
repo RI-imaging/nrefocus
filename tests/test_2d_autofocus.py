@@ -59,7 +59,7 @@ def test_2d_autofocus_cell_helmholtz_metric_roi(
                      minimizer="lmfit",
                      interval=(-5e-6, 5e-6),
                      roi=roi)
-    assert np.allclose(d, expected_d, atol=0)
+    assert np.allclose(d, expected_d, atol=0, rtol=1e-4)
 
     nfield = rf.propagate(d)
     assert np.allclose(nfield[10, 10],

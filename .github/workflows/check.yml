@@ -26,7 +26,6 @@ jobs:
     - name: Install fftw3 libs (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew update
         brew install fftw
     - name: Install dependencies
       run: |

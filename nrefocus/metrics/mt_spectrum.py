@@ -11,7 +11,6 @@ def metric_spectrum(rfi, distance, roi=None, **kwargs):
     Performs bandpass filtering in Fourier space according to optical
     limit of detection system, approximated by twice the wavelength.
     """
-    roi=None
     if roi is not None:
         raise MetricSpectrumValueError(
             "Spectral method does not support ROIs!")

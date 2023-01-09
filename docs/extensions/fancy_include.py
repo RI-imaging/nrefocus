@@ -43,7 +43,6 @@ class IncludeDirective(Directive):
         path = self.state.document.settings.env.config.fancy_include_path
         path = pathlib.Path(path)
         full_path = path / self.arguments[0]
-
         text = full_path.read_text()
 
         # add reference

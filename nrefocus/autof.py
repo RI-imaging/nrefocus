@@ -37,6 +37,8 @@ def autofocus(field, nm, res, ival, roi=None,
         - "average gradient" : average gradient metric of amplitude
         - "rms contrast" : RMS contrast of phase data
         - "spectrum" : sum of filtered Fourier coefficients
+        - "std gradient" : standard deviation of gradient metric of amplitude
+        - "med gradient" : median gradient metric of amplitude
     minimizer: str
         - "lmfit" : lmfit-based minimizer
         - "legacy" : only use for reproducing old results

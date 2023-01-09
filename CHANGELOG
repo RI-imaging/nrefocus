@@ -1,5 +1,7 @@
-0.5.2
+0.5.3
  - enh: add std and median metrics (#19)
+ - docs: make docs build on Windows
+0.5.2
  - enh: clarify roi argument for Refocus.autofocus method (#17)
 0.5.1
  - fix: internally normalize focusing distance to the wavelength for

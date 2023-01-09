@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.7', '3.8']
+        python-version: ['3.9', '3.10']
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
@@ -26,7 +26,6 @@ jobs:
     - name: Install fftw3 libs (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew update
         brew install fftw
     - name: Install dependencies
       run: |

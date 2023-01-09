@@ -37,7 +37,7 @@ Testing is done with pytest::
 
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/nrefocus.svg
    :target: https://pypi.python.org/pypi/nrefocus
-.. |Tests Status| image:: https://img.shields.io/github/workflow/status/RI-Imaging/nrefocus/Checks
+.. |Tests Status| image:: https://img.shields.io/github/actions/workflow/status/RI-Imaging/nrefocus/check.yml
    :target: https://github.com/RI-Imaging/nrefocus/actions?query=workflow%3AChecks
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/RI-imaging/nrefocus/master.svg
    :target: https://codecov.io/gh/RI-imaging/nrefocus

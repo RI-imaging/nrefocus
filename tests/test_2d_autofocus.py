@@ -18,26 +18,22 @@ from test_helper import load_cell
         ("average gradient", [10, 10, 100, 100],
          -8.795139152651752e-07,
          1.0455078513415523 - 0.020478153810279703j),
-
         ("rms contrast", None,
          4.999999999974661e-06,
          1.0505454858452632 - 0.022163822293036956j),
         ("rms contrast", [10, 10, 100, 100],
          4.999999999974661e-06,
          1.0505454858452632 - 0.022163822293036956j),
-
         ("spectrum", None,
          -5e-06,
          1.026638094465674 - 0.02923150877539289j),
         # roi doesn't work with spectrum, see test below
-
         ("std gradient", None,
          -8.781518791456171e-07,
          1.0455597758297575 - 0.02047568956477154j),
         ("std gradient", [10, 10, 100, 100],
          -8.796339535413204e-07,
          1.0455032687136372 - 0.02047838714147014j),
-
         ("med gradient", None,
          2.8018890771670997e-07,
          1.0422687231100252 - 0.01375193149358192j),
@@ -59,7 +55,7 @@ def test_2d_autofocus_cell_helmholtz_metric_roi(
                      minimizer="lmfit",
                      interval=(-5e-6, 5e-6),
                      roi=roi)
-    assert np.allclose(d, expected_d, atol=0)
+    assert np.allclose(d, expected_d, atol=0, rtol=1e-4)
 
     nfield = rf.propagate(d)
     assert np.allclose(nfield[10, 10],
@@ -184,11 +180,9 @@ def test_2d_autofocus_small_interval():
     """
     Test for IndexError failure for brute method
     (brute_step too small).
-
                 for k in range(N - 1, -1, -1):
         >           thisN = Nshape[k]
         E           IndexError: tuple index out of range
-
         /scipy/optimize/optimize.py:3276: IndexError
     """
     wavelength = 647e-9

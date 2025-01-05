@@ -2,9 +2,8 @@ version: 2
 formats:
  - pdf
 python:
-  version: 3.8
+  version: 3.12
   install:
     - requirements: docs/requirements.txt
     - method: pip
       path: .
-  system_packages: false

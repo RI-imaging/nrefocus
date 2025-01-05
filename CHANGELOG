@@ -1,3 +1,6 @@
+0.5.4
+ - tests: `numpy.gradient` has been improved over time yielding different
+   results with the median gradient metric (#21)
 0.5.3
  - enh: add std and median metrics (#19)
  - docs: make docs build on Windows

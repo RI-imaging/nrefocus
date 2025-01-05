@@ -35,11 +35,11 @@ from test_helper import load_cell
          -8.796339535413204e-07,
          1.0455032687136372 - 0.02047838714147014j),
         ("med gradient", None,
-         2.8018890771670997e-07,
-         1.0422687231100252 - 0.01375193149358192j),
+         3.7486514894388433e-07,
+         1.0439383122538641 - 0.00965463808640693j),
         ("med gradient", [10, 10, 100, 100],
-         2.18410667763866e-07,
-         1.042245183739662 - 0.015481320442455255j),
+         2.4705876893894123e-07,
+         1.042218754576971 - 0.014800660835969552j),
     ])
 def test_2d_autofocus_cell_helmholtz_metric_roi(
         metric, roi, expected_d, expected_field_point):
@@ -109,11 +109,11 @@ def test_2d_autofocus_cell_helmholtz_med_gradient():
     d = rf.autofocus(metric="med gradient",
                      minimizer="lmfit",
                      interval=(-5e-6, 5e-6))
-    assert np.allclose(d, 2.8018890771670997e-07, atol=0)
+    assert np.allclose(d, 3.7486514894388433e-07, atol=0)
 
     nfield = rf.propagate(d)
     assert np.allclose(nfield[10, 10],
-                       1.0422687231100252 - 0.01375193149358192j,
+                       1.0439383122538641 - 0.00965463808640693j,
                        atol=0)
 
 

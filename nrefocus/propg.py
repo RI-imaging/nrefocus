@@ -22,7 +22,7 @@ def refocus(field, d, nm, res, method="helmholtz", padding=True):
     nm : float
         Refractive index of medium
     res : float
-        Wavelenth in pixels
+        Wavelength in pixels
     method : str
         Defines the method of propagation;
         one of
@@ -86,7 +86,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     nm : float
         Refractive index of medium
     res : float
-        Wavelenth in pixels
+        Wavelength in pixels
     method : str
         Defines the method of propagation;
         one of

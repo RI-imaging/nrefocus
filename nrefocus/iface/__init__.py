@@ -1,6 +1,7 @@
 # flake8: noqa: F401
 from .rf_numpy import RefocusNumpy
 from .rf_numpy_1d import RefocusNumpy1D
+from .rf_cupy import RefocusCupy
 
 try:
     import pyfftw
@@ -20,6 +21,7 @@ def get_best_interface():
     ordered_candidates = [
         RefocusPyFFTW,
         RefocusNumpy,
+        RefocusCupy,
     ]
     for cand in ordered_candidates:
         if cand is not None:

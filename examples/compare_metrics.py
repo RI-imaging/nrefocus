@@ -7,16 +7,16 @@ from nrefocus.metrics import METRICS
 import matplotlib.pyplot as plt
 
 from examples.example_helper import load_cell
-import cupy as cp
+
+nrefocus.set_ndarray_backend("cupy")
 
 dataset = load_cell("HL60_field.zip")
-dataset = cp.asarray(dataset)
 
 # load initial cell and create rf object
-rf = nrefocus.iface.RefocusNumpy(field=dataset,
-                                 wavelength=647e-9,
-                                 pixel_size=0.139e-6,
-                                 kernel="helmholtz")
+rf = nrefocus.iface.RefocusCupy(field=dataset,
+                                wavelength=647e-9,
+                                pixel_size=0.139e-6,
+                                kernel="helmholtz")
 
 # autofocus the image for each metric
 my_metrics = list(METRICS.keys())

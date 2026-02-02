@@ -1,7 +1,7 @@
 """Deprecated methods"""
 import warnings
 
-import cupy as cp
+from ._ndarray_backend import xp
 
 
 def fft_propagate(fftfield, d, nm, res, method="helmholtz", ret_fft=False):
@@ -89,8 +89,8 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
     Fourier transform of the electric field will be returned (faster).
     """
     assert len(fftfield.shape) == 1, "Dimension of `fftfield` must be 1."
-    km = (2 * cp.pi * nm) / res
-    kx = cp.fft.fftfreq(len(fftfield)) * 2 * cp.pi
+    km = (2 * xp.pi * nm) / res
+    kx = xp.fft.fftfreq(len(fftfield)) * 2 * xp.pi
 
     print(nm, res, d)
     # free space propagator is
@@ -101,18 +101,18 @@ def fft_propagate_2d(fftfield, d, nm, res, method="helmholtz",
         root_km = km**2 - kx**2
         rt0 = (root_km > 0)
         # multiply by rt0 (filter in Fourier space)
-        fstemp = cp.exp(1j * (cp.sqrt(root_km * rt0) - km) * d) * rt0
+        fstemp = xp.exp(1j * (xp.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
         # exp(i*d*(km-kx²/(2*km))
-        # fstemp = cp.exp(-1j * d * (kx**2/(2*km)))
-        fstemp = cp.exp(-1j * d * (kx**2/(2*km)))
+        # fstemp = xp.exp(-1j * d * (kx**2/(2*km)))
+        fstemp = xp.exp(-1j * d * (kx**2/(2*km)))
     else:
         raise ValueError("Unknown method: {}".format(method))
 
     if ret_fft:
         return fftfield * fstemp
     else:
-        return cp.fft.ifft(fftfield * fstemp)
+        return xp.fft.ifft(fftfield * fstemp)
 
 
 def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
@@ -152,24 +152,24 @@ def fft_propagate_3d(fftfield, d, nm, res, method="helmholtz",
     #    raise NotImplementedError("Field must be square shaped.")
     # free space propagator is
     # exp(i*sqrt(km**2-kx**2-ky**2)*d)
-    km = (2 * cp.pi * nm) / res
-    kx = (cp.fft.fftfreq(fftfield.shape[0]) * 2 * cp.pi).reshape(-1, 1)
-    ky = (cp.fft.fftfreq(fftfield.shape[1]) * 2 * cp.pi).reshape(1, -1)
+    km = (2 * xp.pi * nm) / res
+    kx = (xp.fft.fftfreq(fftfield.shape[0]) * 2 * xp.pi).reshape(-1, 1)
+    ky = (xp.fft.fftfreq(fftfield.shape[1]) * 2 * xp.pi).reshape(1, -1)
     if method == "helmholtz":
         # exp(i*sqrt(km²-kx²-ky²)*d)
         root_km = km**2 - kx**2 - ky**2
         rt0 = (root_km > 0)
         # multiply by rt0 (filter in Fourier space)
-        fstemp = cp.exp(1j * (cp.sqrt(root_km * rt0) - km) * d) * rt0
+        fstemp = xp.exp(1j * (xp.sqrt(root_km * rt0) - km) * d) * rt0
     elif method == "fresnel":
         # exp(i*d*(km-(kx²+ky²)/(2*km))
-        fstemp = cp.exp(-1j * d * (kx**2 + ky**2)/(2*km))
+        fstemp = xp.exp(-1j * d * (kx**2 + ky**2)/(2*km))
     else:
         raise ValueError("Unknown method: {}".format(method))
-    # fstemp[cp.where(cp.isnan(fstemp))] = 0
+    # fstemp[xp.where(xp.isnan(fstemp))] = 0
     # Also subtract incoming plane wave. We are only considering
     # the scattered field here.
     if ret_fft:
         return fftfield * fstemp
     else:
-        return cp.fft.ifft2(fftfield * fstemp)
+        return xp.fft.ifft2(fftfield * fstemp)

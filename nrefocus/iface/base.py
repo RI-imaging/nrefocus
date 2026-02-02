@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
 import numexpr as ne
-import cupy as cp
+from .._ndarray_backend import xp
+
 
 from .. import metrics
 from .. import minimizers
@@ -164,18 +165,18 @@ class Refocus(ABC):
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
-        twopi = 2 * cp.pi
+        twopi = 2 * xp.pi
 
         km = twopi * nm / res
-        kx = (cp.fft.fftfreq(self.fft_origin.shape[0]) * twopi).reshape(-1, 1)
-        ky = (cp.fft.fftfreq(self.fft_origin.shape[1]) * twopi).reshape(1, -1)
+        kx = (xp.fft.fftfreq(self.fft_origin.shape[0]) * twopi).reshape(-1, 1)
+        ky = (xp.fft.fftfreq(self.fft_origin.shape[1]) * twopi).reshape(1, -1)
         if self.kernel == "helmholtz":
             # cupy doesn't work directly with numexpr
             # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
             root_km = km ** 2 - kx**2 - ky**2
             rt0 = root_km > 0
             # multiply by rt0 (filter in Fourier space)
-            fstemp = cp.exp(1j * d * (cp.sqrt(root_km * rt0) - km)) * rt0
+            fstemp = xp.exp(1j * d * (xp.sqrt(root_km * rt0) - km)) * rt0
 
         # if self.kernel == "helmholtz":
         #     # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))

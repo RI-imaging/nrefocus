@@ -1,6 +1,6 @@
 import multiprocessing as mp
 
-import cupy as cp
+from .._ndarray_backend import xp
 import pyfftw
 
 from .. import pad
@@ -53,7 +53,7 @@ class RefocusPyFFTW(Refocus):
 
     def propagate(self, distance):
         fft_kernel = self.get_kernel(distance=distance)
-        cp.multiply(self.fft_origin, fft_kernel,
+        xp.multiply(self.fft_origin, fft_kernel,
                     out=self._ifft_obj.input_array)
         refoc = self._ifft_obj()
         if self.padding:

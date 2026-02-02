@@ -1,6 +1,6 @@
 import warnings
 
-import cupy as cp
+from .._ndarray_backend import xp
 
 
 class LegacyDeprecationWarning(DeprecationWarning):
@@ -23,7 +23,7 @@ def minimize_legacy(rf, metric_func, interval, roi=None, coarse_acc=1,
         the following arguments: `rf`, `distance`, and `roi`
     interval: tuple of floats
         (minimum, maximum) of interval to search [m]
-    roi: tuple of slices or cp.ndarray
+    roi: tuple of slices or xp.ndarray
         Region of interest for which the metric will be minimized.
         If not given, the entire field will be used.
     coarse_acc: float
@@ -55,15 +55,15 @@ def minimize_legacy(rf, metric_func, interval, roi=None, coarse_acc=1,
     ival = interval
     # set coarse interval
     n = int(100 / coarse_acc)
-    zc = cp.linspace(ival[0], ival[1], n, endpoint=True)
+    zc = xp.linspace(ival[0], ival[1], n, endpoint=True)
 
     # initiate gradient vector
-    gradc = cp.zeros(zc.shape)
+    gradc = xp.zeros(zc.shape)
     for i in range(len(zc)):
         d = zc[i]
         gradc[i] = metric_func(rf, distance=d, roi=roi)
 
-    minid = cp.argmin(gradc)
+    minid = xp.argmin(gradc)
     if minid == 0:
         zc -= zc[1] - zc[0]
         minid += 1
@@ -76,13 +76,13 @@ def minimize_legacy(rf, metric_func, interval, roi=None, coarse_acc=1,
     mingrad = gradc[minid]
 
     while True:
-        gradf = cp.zeros(numfine)
+        gradf = xp.zeros(numfine)
         ival = (zf[minid - 1], zf[minid + 1])
-        zf = cp.linspace(ival[0], ival[1], numfine)
+        zf = xp.linspace(ival[0], ival[1], numfine)
         for i in range(len(zf)):
             d = zf[i]
             gradf[i] = metric_func(rf, distance=d, roi=roi)
-        minid = cp.argmin(gradf)
+        minid = xp.argmin(gradf)
         if minid == 0:
             zf -= zf[1] - zf[0]
             minid += 1
@@ -92,7 +92,7 @@ def minimize_legacy(rf, metric_func, interval, roi=None, coarse_acc=1,
         if abs(mingrad - gradf[minid]) / 100 < fine_acc:
             break
 
-    minid = cp.argmin(gradf)
+    minid = xp.argmin(gradf)
     af_dist = zf[minid]
 
     ret_val = [af_dist]

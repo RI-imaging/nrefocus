@@ -1,4 +1,4 @@
-import cupy as cp
+from .._ndarray_backend import xp
 
 
 def metric_std_gradient(rfi, distance, roi=None, **kwargs):
@@ -8,7 +8,7 @@ def metric_std_gradient(rfi, distance, roi=None, **kwargs):
     -----
     The absolute value of the gradient is returned.
     """
-    data = cp.abs(rfi.propagate(distance))
+    data = xp.abs(rfi.propagate(distance))
     if roi is not None:
         data = data[roi]
-    return cp.std(cp.array(cp.gradient(data)))
+    return xp.std(xp.array(xp.gradient(data)))

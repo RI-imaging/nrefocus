@@ -1,4 +1,4 @@
-import cupy as cp
+from .._ndarray_backend import xp
 
 from .. import pad
 
@@ -63,17 +63,17 @@ class RefocusNumpy1D(Refocus):
         """
         if padding:
             field = pad.pad_add(field)
-        return cp.fft.fft(field)
+        return xp.fft.fft(field)
 
     def get_kernel(self, distance):
         """Return the kernel for a 1D propagation"""
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
-        twopi = 2 * cp.pi
+        twopi = 2 * xp.pi
 
         km = twopi * nm / res
-        kx = cp.fft.fftfreq(len(self.fft_origin)) * 2 * cp.pi
+        kx = xp.fft.fftfreq(len(self.fft_origin)) * 2 * xp.pi
 
         # free space propagator is
         if self.kernel == "helmholtz":
@@ -83,10 +83,10 @@ class RefocusNumpy1D(Refocus):
             root_km = km ** 2 - kx ** 2
             rt0 = (root_km > 0)
             # multiply by rt0 (filter in Fourier space)
-            fstemp = cp.exp(1j * (cp.sqrt(root_km * rt0) - km) * d) * rt0
+            fstemp = xp.exp(1j * (xp.sqrt(root_km * rt0) - km) * d) * rt0
         elif self.kernel == "fresnel":
             # unnormalized: exp(i*d*(km-kx²/(2*km))
-            fstemp = cp.exp(-1j * d * kx ** 2 / (2 * km))
+            fstemp = xp.exp(-1j * d * kx ** 2 / (2 * km))
         else:
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
         return fstemp
@@ -105,7 +105,7 @@ class RefocusNumpy1D(Refocus):
             Initial 1D field refocused at `distance`
         """
         fft_kernel = self.get_kernel(distance=distance)
-        refoc = cp.fft.ifft(self.fft_origin * fft_kernel)
+        refoc = xp.fft.ifft(self.fft_origin * fft_kernel)
         if self.padding:
             refoc = pad.pad_rem(refoc)
         return refoc

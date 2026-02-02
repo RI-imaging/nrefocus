@@ -1,6 +1,6 @@
 import copy
 import multiprocessing as mp
-import cupy as cp
+from ._ndarray_backend import xp
 
 from . import iface
 from .propg import refocus_stack
@@ -95,7 +95,7 @@ def autofocus(field, nm, res, ival, roi=None,
 
     data = rf.autofocus(metric=metric,
                         minimizer=minimizer,
-                        interval=cp.array(ival)*rf.pixel_size,
+                        interval=xp.array(ival)*rf.pixel_size,
                         roi=roi,
                         minimizer_kwargs=minimizer_kwargs,
                         ret_grid=False,
@@ -149,7 +149,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     -------
     dopt: float or list of float
         The focusing distance(s) (only one value if `same_dist`)
-    field_stack: cp.ndarray
+    field_stack: xp.ndarray
         The refocused field stack
     """
     dopt = list()
@@ -159,7 +159,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     # setup arguments
     stackargs = list()
     for s in range(m):
-        stackargs.append([cp.array(fieldstack[s], copy=copy), nm, res, ival,
+        stackargs.append([xp.array(fieldstack[s], copy=copy), nm, res, ival,
                           roi, metric, minimizer, minimizer_kwargs,
                           padding, 1])
     # perform first pass
@@ -169,7 +169,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     p.terminate()
     p.join()
 
-    newstack = cp.zeros(fieldstack.shape, dtype=fieldstack.dtype)
+    newstack = xp.zeros(fieldstack.shape, dtype=fieldstack.dtype)
 
     for s in range(m):
         if isinstance(result[s], list):
@@ -179,7 +179,7 @@ def autofocus_stack(fieldstack, nm, res, ival, roi=None,
     # perform second pass if `same_dist` is True
     if same_dist:
         # find average dopt
-        davg = cp.average(dopt)
+        davg = xp.average(dopt)
         newstack = refocus_stack(fieldstack, davg, nm, res,
                                  num_cpus=num_cpus, copy=copy,
                                  padding=padding)

@@ -1,4 +1,4 @@
-import cupy as cp
+from .._ndarray_backend import xp
 
 from .. import pad
 
@@ -27,11 +27,11 @@ class RefocusNumpy(Refocus):
         """
         if padding:
             field = pad.pad_add(field)
-        return cp.fft.fft2(field)
+        return xp.fft.fft2(field)
 
     def propagate(self, distance):
         fft_kernel = self.get_kernel(distance=distance)
-        refoc = cp.fft.ifft2(self.fft_origin * fft_kernel)
+        refoc = xp.fft.ifft2(self.fft_origin * fft_kernel)
         if self.padding:
             refoc = pad.pad_rem(refoc)
         return refoc

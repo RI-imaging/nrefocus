@@ -1,5 +1,5 @@
 import multiprocessing as mp
-import cupy as cp
+from ._ndarray_backend import xp
 
 from . import iface
 
@@ -44,7 +44,8 @@ def refocus(field, d, nm, res, method="helmholtz", padding=True):
     This method uses :class:`nrefocus.RefocusNumpy` for refocusing
     of 2D fields. This is because the :func:`nrefocus.refocus_stack`
     function uses `async` which appears to not work with e.g.
-    :mod:`pyfftw`.
+    :mod:`pyfftw`. Use `rf = nrefocus.iface.RefocusCupy` syntax
+    if you want to use PyFFTW or Cupy.
     """
     fshape = len(field.shape)
     if fshape == 1:
@@ -146,7 +147,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     p.join()
 
     if copy:
-        data = cp.zeros(fieldstack.shape, dtype=result[0].dtype)
+        data = xp.zeros(fieldstack.shape, dtype=result[0].dtype)
     else:
         data = fieldstack
 

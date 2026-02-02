@@ -1,4 +1,4 @@
-import numpy as np
+import cupy as cp
 
 
 def metric_average_gradient(rfi, distance, roi=None, **kwargs):
@@ -8,7 +8,7 @@ def metric_average_gradient(rfi, distance, roi=None, **kwargs):
     -----
     The absolute value of the gradient is returned.
     """
-    data = np.abs(rfi.propagate(distance))
+    data = cp.abs(rfi.propagate(distance))
     if roi is not None:
         data = data[roi]
-    return np.average(np.array(np.gradient(data))**2)
+    return cp.average(cp.array(cp.gradient(data))**2)

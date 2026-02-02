@@ -5,8 +5,8 @@ interferometry (SID4Bio, Phasics S.A., France).
 The diameter of the cell is about 20µm.
 """
 import matplotlib.pylab as plt
-import numpy as np
-import unwrap
+import cupy as cp
+from skimage.restoration import unwrap_phase
 
 import nrefocus
 
@@ -15,23 +15,25 @@ from example_helper import load_cell
 # load initial cell
 cell1 = load_cell("HL60_field.zip")
 
+cell1 = cp.asarray(cell1)
+
 # refocus to two different positions
 cell2 = nrefocus.refocus(cell1, 15, 1, 1)  # forward
 cell3 = nrefocus.refocus(cell1, -15, 1, 1)  # backward
 
 # amplitude range
-vmina = np.min(np.abs(cell1))
-vmaxa = np.max(np.abs(cell1))
+vmina = cp.min(cp.abs(cell1))
+vmaxa = cp.max(cp.abs(cell1))
 ampkw = {"cmap": plt.get_cmap("gray"),
          "vmin": vmina,
          "vmax": vmaxa}
 
 # phase range
-cell1p = unwrap.unwrap(np.angle(cell1))
-cell2p = unwrap.unwrap(np.angle(cell2))
-cell3p = unwrap.unwrap(np.angle(cell3))
-vminp = np.min(cell1p)
-vmaxp = np.max(cell1p)
+cell1p = unwrap_phase(cp.angle(cell1))
+cell2p = unwrap_phase(cp.angle(cell2))
+cell3p = unwrap_phase(cp.angle(cell3))
+vminp = cp.min(cell1p)
+vmaxp = cp.max(cell1p)
 phakw = {"cmap": plt.get_cmap("coolwarm"),
          "vmin": vminp,
          "vmax": vmaxp}
@@ -49,9 +51,9 @@ axes[1].set_title("original image")
 axes[2].set_title("focused forward")
 
 # data
-mapamp = axes[0].imshow(np.abs(cell3), **ampkw)
-axes[1].imshow(np.abs(cell1), **ampkw)
-axes[2].imshow(np.abs(cell2), **ampkw)
+mapamp = axes[0].imshow(cp.abs(cell3), **ampkw)
+axes[1].imshow(cp.abs(cell1), **ampkw)
+axes[2].imshow(cp.abs(cell2), **ampkw)
 mappha = axes[3].imshow(cell3p, **phakw)
 axes[4].imshow(cell1p, **phakw)
 axes[5].imshow(cell2p, **phakw)

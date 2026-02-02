@@ -1,4 +1,4 @@
-import numpy as np
+import cupy as cp
 
 
 def metric_rms_contrast(rfi, distance, roi=None, **kwargs):
@@ -8,9 +8,9 @@ def metric_rms_contrast(rfi, distance, roi=None, **kwargs):
     -----
     The negative angle of the field is used for contrast estimation.
     """
-    data = -np.angle(rfi.propagate(distance))
-    av = np.average(data, *kwargs)
+    data = -cp.angle(rfi.propagate(distance))
+    av = cp.average(data, *kwargs)
     mal = 1 / (data.shape[0] * data.shape[1])
     if roi is not None:
         data = data[roi]
-    return np.sqrt(mal * np.sum((data - av)**2))
+    return cp.sqrt(mal * cp.sum((data - av)**2))

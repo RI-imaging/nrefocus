@@ -1,5 +1,5 @@
 import multiprocessing as mp
-import numpy as np
+import cupy as cp
 
 from . import iface
 
@@ -146,7 +146,7 @@ def refocus_stack(fieldstack, d, nm, res, method="helmholtz",
     p.join()
 
     if copy:
-        data = np.zeros(fieldstack.shape, dtype=result[0].dtype)
+        data = cp.zeros(fieldstack.shape, dtype=result[0].dtype)
     else:
         data = fieldstack
 

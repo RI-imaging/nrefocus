@@ -19,9 +19,9 @@ def get_best_interface():
     is returned. The fallback is :class:`nrefocus.RefocusNumpy`.
     """
     ordered_candidates = [
+        RefocusCupy,
         RefocusPyFFTW,
         RefocusNumpy,
-        RefocusCupy,
     ]
     for cand in ordered_candidates:
         if cand is not None:

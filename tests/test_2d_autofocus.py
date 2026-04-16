@@ -6,8 +6,6 @@ import nrefocus
 from nrefocus.roi_handling import ROIValueError
 from nrefocus.metrics.mt_spectrum import MetricSpectrumValueError
 
-from test_helper import load_cell
-
 
 @pytest.mark.parametrize(
     "metric, roi, expected_d, expected_field_point",
@@ -41,10 +39,10 @@ from test_helper import load_cell
          2.4705876893894123e-07,
          1.042218754576971 - 0.014800660835969552j),
     ])
-def test_2d_autofocus_cell_helmholtz_metric_roi(
+def test_2d_autofocus_cell_helmholtz_metric_roi(cell_field,
         metric, roi, expected_d, expected_field_point):
     """Check that roi works for the relevant metrics."""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -63,9 +61,9 @@ def test_2d_autofocus_cell_helmholtz_metric_roi(
                        atol=0)
 
 
-def test_2d_autofocus_cell_helmholtz_average_gradient():
+def test_2d_autofocus_cell_helmholtz_average_gradient(cell_field):
     """attempt to autofocus with standard arguments"""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -81,9 +79,9 @@ def test_2d_autofocus_cell_helmholtz_average_gradient():
                        atol=0)
 
 
-def test_2d_autofocus_cell_helmholtz_std_gradient():
+def test_2d_autofocus_cell_helmholtz_std_gradient(cell_field):
     """attempt to autofocus with std gradient"""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -99,9 +97,9 @@ def test_2d_autofocus_cell_helmholtz_std_gradient():
                        atol=0)
 
 
-def test_2d_autofocus_cell_helmholtz_med_gradient():
+def test_2d_autofocus_cell_helmholtz_med_gradient(cell_field):
     """attempt to autofocus with med gradient"""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -117,9 +115,9 @@ def test_2d_autofocus_cell_helmholtz_med_gradient():
                        atol=0)
 
 
-def test_2d_autofocus_cell_helmholtz_spectrum_roi():
+def test_2d_autofocus_cell_helmholtz_spectrum_roi(cell_field):
     """Show that the spectrum metric doesn't allow roi."""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -134,9 +132,9 @@ def test_2d_autofocus_cell_helmholtz_spectrum_roi():
                          roi=[10, 100, 10, 100])
 
 
-def test_2d_autofocus_return_field():
+def test_2d_autofocus_return_field(cell_field):
     """Basic check of the field after autofocus"""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -154,9 +152,9 @@ def test_2d_autofocus_return_field():
     assert np.all(nfield == nfield2)
 
 
-def test_2d_autofocus_return_grid_field():
+def test_2d_autofocus_return_grid_field(cell_field):
     """Check the calculation of the metric after autofocus"""
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -176,7 +174,7 @@ def test_2d_autofocus_return_grid_field():
     assert idx_metric_min == idx_distance
 
 
-def test_2d_autofocus_small_interval():
+def test_2d_autofocus_small_interval(cell_field):
     """
     Test for IndexError failure for brute method
     (brute_step too small).
@@ -186,7 +184,7 @@ def test_2d_autofocus_small_interval():
         /scipy/optimize/optimize.py:3276: IndexError
     """
     wavelength = 647e-9
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=wavelength,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -200,10 +198,10 @@ def test_2d_autofocus_small_interval():
     )
 
 
-def test_2d_autofocus_cell_roi():
+def test_2d_autofocus_cell_roi(cell_field):
     """Compare the roi given to rf.autofocus with numpy indexing"""
 
-    field = load_cell("HL60_field.zip")
+    field = cell_field
     roi = [10, 20, 100, 200]
     slice_roi = (slice(10, 100), slice(20, 200))
 
@@ -223,10 +221,10 @@ def test_2d_autofocus_cell_roi():
     assert np.array_equal(field_1, field_3)
 
 
-def test_2d_autofocus_cell_roi_list_of_slices():
+def test_2d_autofocus_cell_roi_list_of_slices(cell_field):
     """Use a list of slices to slice the array."""
 
-    field = load_cell("HL60_field.zip")
+    field = cell_field
     roi = [10, 20, 100, 200]
     slice_roi = [slice(10, 100), slice(20, 200)]
 
@@ -244,10 +242,10 @@ def test_2d_autofocus_cell_roi_list_of_slices():
     assert np.array_equal(field_1, field_2)
 
 
-def test_2d_autofocus_cell_roi_nones():
+def test_2d_autofocus_cell_roi_nones(cell_field):
     """Use None when slicing with roi."""
 
-    field = load_cell("HL60_field.zip")
+    field = cell_field
     roi = [None, None, 10, 100]
     slice_roi = (slice(None, 10), slice(None, 100))
 
@@ -267,10 +265,10 @@ def test_2d_autofocus_cell_roi_nones():
     assert np.array_equal(field_1, field_3)
 
 
-def test_2d_autofocus_cell_roi_fail():
+def test_2d_autofocus_cell_roi_fail(cell_field):
     """Give bad roi arguments"""
 
-    field = load_cell("HL60_field.zip")
+    field = cell_field
 
     rf = nrefocus.iface.RefocusNumpy(field=field,
                                      wavelength=647e-9,

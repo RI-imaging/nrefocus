@@ -46,6 +46,7 @@ class Refocus(ABC):
         self.padding = padding
         self.origin = field
         self.fft_origin = self._init_fft(field, padding)
+        print(".")
 
     @property
     def shape(self):

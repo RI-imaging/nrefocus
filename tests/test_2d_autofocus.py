@@ -39,8 +39,8 @@ from nrefocus.metrics.mt_spectrum import MetricSpectrumValueError
          2.4705876893894123e-07,
          1.042218754576971 - 0.014800660835969552j),
     ])
-def test_2d_autofocus_cell_helmholtz_metric_roi(cell_field,
-        metric, roi, expected_d, expected_field_point):
+def test_2d_autofocus_cell_helmholtz_metric_roi(
+        cell_field, metric, roi, expected_d, expected_field_point):
     """Check that roi works for the relevant metrics."""
     rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,

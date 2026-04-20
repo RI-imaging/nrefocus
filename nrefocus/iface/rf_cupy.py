@@ -2,7 +2,7 @@ import warnings
 import scipy as sp
 import cupyx.scipy.fft as cufft
 
-from .._ndarray_backend import xp
+from .._ndarray_backend import xp, NDArrayBackendWarning
 from .. import pad
 from .base import Refocus
 
@@ -32,7 +32,7 @@ class RefocusCupy(Refocus):
             Fourier transform the initial field
         """
         if not xp.is_cupy():
-            warnings.warn(UserWarning(
+            warnings.warn(NDArrayBackendWarning(
                 "You are using `RefocusCupy` without the 'cupy' ndarray "
                 "backend. This will limit the Refocussing speed. "
                 "To set the ndarray "

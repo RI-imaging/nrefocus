@@ -43,11 +43,19 @@ def test_ndarray_backend_swap():
     assert xp.is_cupy()
 
 
-def test_ndarray_backend_expected():
+def test_ndarray_backend_expected_numpy():
     """should return cupy"""
     assert nrefocus.RefocusNumpy.backend_expected == "numpy"
+    assert nrefocus.RefocusNumpy.backend_incompatible == "cupy"
     assert nrefocus.RefocusPyFFTW.backend_expected == "numpy"
+    assert nrefocus.RefocusPyFFTW.backend_incompatible == "cupy"
+
+
+@skip_if_missing("cupy")
+def test_ndarray_backend_expected_cupy():
+    """should return cupy"""
     assert nrefocus.RefocusCupy.backend_expected == "cupy"
+    assert nrefocus.RefocusCupy.backend_incompatible is None
 
 
 @skip_if_missing("cupy")

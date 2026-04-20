@@ -25,11 +25,3 @@ def test_2d_refocus1(set_ndarray_backend_to_cupy):
     reference = np.loadtxt(data_path / "test_2d_refocus1.txt")
     assert np.allclose(np.array(refocused_cpu).flatten().view(float),
                        reference)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

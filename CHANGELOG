@@ -1,4 +1,4 @@
-0.5.4
+0.6.0
  - feat: CuPy Refocus interface (#24)
  - setup: migrate to pyproject.toml
  - tests: `numpy.gradient` has been improved over time yielding different

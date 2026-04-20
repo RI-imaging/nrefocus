@@ -9,7 +9,12 @@ class RefocusNumpy(Refocus):
     """Refocusing with numpy-based Fourier transform
 
     .. versionadded:: 0.3.0
+
     """
+    backend_expected = "numpy"
+    # cupy doesn't work due to padding
+    backend_incompatible = "cupy"
+
     def _init_fft(self, field, padding):
         """Perform initial Fourier transform of the input field
 

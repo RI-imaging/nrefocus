@@ -12,7 +12,12 @@ class RefocusPyFFTW(Refocus):
     """Refocusing with FFTW
 
     .. versionadded:: 0.4.0
+
     """
+    backend_expected = "numpy"
+    # pyfftw can't used `cupy` ndarrays
+    backend_incompatible = "cupy"
+
     def _init_fft(self, field, padding):
         """Perform initial Fourier transform of the input field
 

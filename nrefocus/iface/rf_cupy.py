@@ -11,7 +11,10 @@ class RefocusCupy(Refocus):
     """Refocusing with cupy-based Fourier transform
 
     .. versionadded:: 0.6.0
+
     """
+    backend_expected = "cupy"
+    backend_incompatible = None
 
     def _init_fft(self, field, padding):
         """Perform initial Fourier transform of the input field
@@ -30,9 +33,10 @@ class RefocusCupy(Refocus):
         """
         if not xp.is_cupy():
             warnings.warn(UserWarning(
-                "You are using `FFTFilterCupy` without the 'cupy' ndarray "
-                "backend. This will limit the FFT speed. To set the ndarray "
-                "backend, use `qpretrieve.set_ndarray_backend('cupy')` "))
+                "You are using `RefocusCupy` without the 'cupy' ndarray "
+                "backend. This will limit the Refocussing speed. "
+                "To set the ndarray "
+                "backend, use `nrefocus.set_ndarray_backend('cupy')` "))
 
         field_gpu = xp.asarray(field)
         if padding:
@@ -43,9 +47,10 @@ class RefocusCupy(Refocus):
     def propagate(self, distance):
         if not xp.is_cupy():
             warnings.warn(UserWarning(
-                "You are using `FFTFilterCupy` without the 'cupy' ndarray "
-                "backend. This will limit the FFT speed. To set the ndarray "
-                "backend, use `qpretrieve.set_ndarray_backend('cupy')` "))
+                "You are using `RefocusCupy` without the 'cupy' ndarray "
+                "backend. This will limit the Refocussing speed. "
+                "To set the ndarray "
+                "backend, use `nrefocus.set_ndarray_backend('cupy')` "))
 
         fft_kernel = self.get_kernel(distance=distance)
         fft_gpu = xp.asarray(self.fft_origin * fft_kernel)

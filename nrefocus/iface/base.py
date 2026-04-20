@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
-
+import warnings
 import numexpr as ne
-from .._ndarray_backend import xp
 
-
+from .._ndarray_backend import xp, NDArrayBackendWarning
 from .. import metrics
 from .. import minimizers
 from ..roi_handling import parse_roi
@@ -45,8 +44,8 @@ class Refocus(ABC):
         self.kernel = kernel
         self.padding = padding
         self.origin = field
+        self.backend_check()
         self.fft_origin = self._init_fft(field, padding)
-        print(".")
 
     @property
     def shape(self):
@@ -77,6 +76,40 @@ class Refocus(ABC):
         Any subclass should perform padding with
         :func:`nrefocus.pad.padd_add` during initialization.
         """
+
+    @property
+    @abstractmethod
+    def backend_expected(self):
+        """All Refocus subclasses must have this
+
+        .. versionadded:: 0.6.0
+        """
+
+    def backend_check(self):
+        """
+        Warn if the Refocus superclass doesn't match expected backend.
+        Raise an Error if the RefocusPyFFTW is used with `numpy` backend.
+
+        .. versionadded:: 0.6.0
+        """
+
+        if xp.backend_name() != self.backend_expected:
+            msg_corr = (
+                "To set the correct ndarray backend, use "
+                f"`nrefocus.set_ndarray_backend('{self.backend_expected}')`")
+
+            if self.backend_incompatible:
+                msg_err = (
+                    f"You cannot use the '{self.backend_incompatible}' "
+                    f"ndarray backend with `{self.__class__.__name__}`. ")
+                raise NDArrayBackendWarning(msg_err + msg_corr)
+
+            else:
+                msg_warn = (
+                    f"You are using `{self.__class__.__name__}` with the "
+                    f"'{xp.backend_name()}' ndarray backend. This might limit "
+                    f"the Refocussing speed. ")
+                warnings.warn(msg_warn + msg_corr, NDArrayBackendWarning)
 
     def autofocus(self, interval, metric="average gradient", minimizer="lmfit",
                   roi=None, minimizer_kwargs=None, ret_grid=False,
@@ -174,7 +207,7 @@ class Refocus(ABC):
         if self.kernel == "helmholtz":
             # cupy doesn't work directly with numexpr
             # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
-            root_km = km ** 2 - kx**2 - ky**2
+            root_km = km ** 2 - kx ** 2 - ky ** 2
             rt0 = root_km > 0
             # multiply by rt0 (filter in Fourier space)
             fstemp = xp.exp(1j * d * (xp.sqrt(root_km * rt0) - km)) * rt0

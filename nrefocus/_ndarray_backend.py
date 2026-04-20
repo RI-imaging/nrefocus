@@ -49,13 +49,13 @@ class NDArrayBackend:
     def assert_numpy(self):
         assert self.is_numpy(), (
             "ndarray_backend is not 'numpy'. "
-            "To use FFTFilterNumpy, run `set('numpy')`."
+            "To use RefocusNumpy, run `set('numpy')`."
         )
 
     def assert_cupy(self):
         assert self.is_cupy(), (
             "ndarray_backend is not 'cupy'. "
-            "To use FFTFilterCupy, run `set('cupy')`."
+            "To use RefocusCupy, run `set('cupy')`."
         )
 
 

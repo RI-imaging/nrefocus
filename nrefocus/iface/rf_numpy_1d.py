@@ -6,6 +6,9 @@ from .base import Refocus
 
 
 class RefocusNumpy1D(Refocus):
+    backend_expected = "numpy"
+    backend_incompatible = None
+
     def __init__(self, field, wavelength, pixel_size, medium_index=1.3333,
                  distance=0, kernel="helmholtz", padding=True):
         r"""Refocus a 1D field with numpy

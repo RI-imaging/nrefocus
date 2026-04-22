@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 import warnings
 import numexpr as ne
 
-import nrefocus
 from .._ndarray_backend import xp, NDArrayBackendWarning
 from .. import metrics
 from .. import minimizers

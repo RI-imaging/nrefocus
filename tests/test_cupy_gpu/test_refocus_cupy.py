@@ -10,7 +10,7 @@ data_path = pathlib.Path(__file__).parent.parent / "data"
 
 
 @skip_if_missing("cupy")
-def test_2d_refocus1(set_ndarray_backend_to_cupy):
+def test_2d_refocus1_cupy(set_ndarray_backend_to_cupy):
     pixel_size = 1e-6
     rf = nrefocus.RefocusCupy(field=np.arange(256).reshape(16, 16),
                               wavelength=8.25 * pixel_size,

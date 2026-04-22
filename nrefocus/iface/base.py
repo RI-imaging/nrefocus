@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-
+import warnings
 import numexpr as ne
-import numpy as np
 
+from .._ndarray_backend import xp, NDArrayBackendWarning
 from .. import metrics
 from .. import minimizers
 from ..roi_handling import parse_roi
@@ -44,6 +44,7 @@ class Refocus(ABC):
         self.kernel = kernel
         self.padding = padding
         self.origin = field
+        self.backend_check()
         self.fft_origin = self._init_fft(field, padding)
 
     @property
@@ -75,6 +76,40 @@ class Refocus(ABC):
         Any subclass should perform padding with
         :func:`nrefocus.pad.padd_add` during initialization.
         """
+
+    @property
+    @abstractmethod
+    def backend_expected(self):
+        """All Refocus subclasses must have this
+
+        .. versionadded:: 0.6.0
+        """
+
+    def backend_check(self):
+        """
+        Warn if the Refocus superclass doesn't match expected backend.
+        Raise an Error if the RefocusPyFFTW is used with `numpy` backend.
+
+        .. versionadded:: 0.6.0
+        """
+
+        if xp.backend_name() != self.backend_expected:
+            msg_corr = (
+                "To set the correct ndarray backend, use "
+                f"`nrefocus.set_ndarray_backend('{self.backend_expected}')`")
+
+            if self.backend_incompatible:
+                msg_err = (
+                    f"You cannot use the '{self.backend_incompatible}' "
+                    f"ndarray backend with `{self.__class__.__name__}`. ")
+                raise NDArrayBackendWarning(msg_err + msg_corr)
+
+            else:
+                msg_warn = (
+                    f"You are using `{self.__class__.__name__}` with the "
+                    f"'{xp.backend_name()}' ndarray backend. This might limit "
+                    f"the Refocussing speed. ")
+                warnings.warn(msg_warn + msg_corr, NDArrayBackendWarning)
 
     def autofocus(self, interval, metric="average gradient", minimizer="lmfit",
                   roi=None, minimizer_kwargs=None, ret_grid=False,
@@ -155,6 +190,40 @@ class Refocus(ABC):
     def parse_roi(roi):
         return parse_roi(roi)
 
+    def _evaluate_kernel(self, kx, ky, km, d):
+        """Cupy doesn't work with numerical expressions, so we need this"""
+        if self.kernel == "helmholtz":
+            if xp.is_cupy():
+                # cupy doesn't work directly with numexpr
+                # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
+                root_km = km ** 2 - kx ** 2 - ky ** 2
+                rt0 = root_km > 0
+                # multiply by rt0 (filter in Fourier space)
+                fstemp = xp.exp(1j * d * (xp.sqrt(root_km * rt0) - km)) * rt0
+            else:
+                # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
+                root_km = ne.evaluate(
+                    "km ** 2 - kx**2 - ky**2",
+                    local_dict={"kx": kx, "ky": ky, "km": km})
+                rt0 = ne.evaluate("root_km > 0")
+                # multiply by rt0 (filter in Fourier space)
+                fstemp = ne.evaluate(
+                    "exp(1j * d * (sqrt(root_km * rt0) - km)) * rt0",
+                    local_dict={"root_km": root_km, "rt0": rt0,
+                                "km": km, "d": d})
+
+        elif self.kernel == "fresnel":
+            if xp.is_cupy():
+                fstemp = xp.exp(-1j * d * (kx**2 + ky**2) / (2 * km))
+            else:
+                # unnormalized: exp(i*d*(km-(kx²+ky²)/(2*km))
+                fstemp = ne.evaluate(
+                    "exp(-1j * d * (kx**2 + ky**2) / (2 * km))",
+                    local_dict={"kx": kx, "ky": ky, "km": km, "d": d})
+        else:
+            raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
+        return fstemp
+
     def get_kernel(self, distance):
         """Return the current kernel
 
@@ -164,35 +233,12 @@ class Refocus(ABC):
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
-        twopi = 2 * np.pi
+        twopi = 2 * xp.pi
 
         km = twopi * nm / res
-        kx = (np.fft.fftfreq(self.fft_origin.shape[0]) * twopi).reshape(-1, 1)
-        ky = (np.fft.fftfreq(self.fft_origin.shape[1]) * twopi).reshape(1, -1)
-        if self.kernel == "helmholtz":
-            # unnormalized: exp(i*d*sqrt(km²-kx²-ky²))
-            root_km = ne.evaluate("km ** 2 - kx**2 - ky**2",
-                                  local_dict={"kx": kx,
-                                              "ky": ky,
-                                              "km": km})
-            rt0 = ne.evaluate("root_km > 0")
-            # multiply by rt0 (filter in Fourier space)
-            fstemp = ne.evaluate(
-                "exp(1j * d * (sqrt(root_km * rt0) - km)) * rt0",
-                local_dict={"root_km": root_km,
-                            "rt0": rt0,
-                            "km": km,
-                            "d": d}
-            )
-        elif self.kernel == "fresnel":
-            # unnormalized: exp(i*d*(km-(kx²+ky²)/(2*km))
-            fstemp = ne.evaluate("exp(-1j * d * (kx**2 + ky**2) / (2 * km))",
-                                 local_dict={"kx": kx,
-                                             "ky": ky,
-                                             "km": km,
-                                             "d": d})
-        else:
-            raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
+        kx = (xp.fft.fftfreq(self.fft_origin.shape[0]) * twopi).reshape(-1, 1)
+        ky = (xp.fft.fftfreq(self.fft_origin.shape[1]) * twopi).reshape(1, -1)
+        fstemp = self._evaluate_kernel(kx, ky, km, d)
         return fstemp
 
     @abstractmethod

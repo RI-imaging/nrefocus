@@ -36,6 +36,9 @@ classifiers=[
 
 [project.optional-dependencies]
 FFTW = ["pyfftw>=0.12.0"]
+CUPY = [
+    "cupy-cuda12x; platform_system != 'Darwin'",
+]
 
 [project.urls]
 Repository = "https://github.com/RI-imaging/nrefocus"

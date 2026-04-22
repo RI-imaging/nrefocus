@@ -10,6 +10,7 @@ This is the documentaion of nrefocus version |release|.
    :caption: Contents:
 
    sec_introduction
+   sec_ndarray_backend
    sec_theory
    sec_examples
    sec_code_reference

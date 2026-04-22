@@ -1,4 +1,4 @@
-import numpy as np
+from .._ndarray_backend import xp
 
 from .. import pad
 
@@ -6,6 +6,9 @@ from .base import Refocus
 
 
 class RefocusNumpy1D(Refocus):
+    backend_expected = "numpy"
+    backend_incompatible = None
+
     def __init__(self, field, wavelength, pixel_size, medium_index=1.3333,
                  distance=0, kernel="helmholtz", padding=True):
         r"""Refocus a 1D field with numpy
@@ -63,17 +66,17 @@ class RefocusNumpy1D(Refocus):
         """
         if padding:
             field = pad.pad_add(field)
-        return np.fft.fft(field)
+        return xp.fft.fft(field)
 
     def get_kernel(self, distance):
         """Return the kernel for a 1D propagation"""
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
-        twopi = 2 * np.pi
+        twopi = 2 * xp.pi
 
         km = twopi * nm / res
-        kx = np.fft.fftfreq(len(self.fft_origin)) * 2 * np.pi
+        kx = xp.fft.fftfreq(len(self.fft_origin)) * 2 * xp.pi
 
         # free space propagator is
         if self.kernel == "helmholtz":
@@ -83,10 +86,10 @@ class RefocusNumpy1D(Refocus):
             root_km = km ** 2 - kx ** 2
             rt0 = (root_km > 0)
             # multiply by rt0 (filter in Fourier space)
-            fstemp = np.exp(1j * (np.sqrt(root_km * rt0) - km) * d) * rt0
+            fstemp = xp.exp(1j * (xp.sqrt(root_km * rt0) - km) * d) * rt0
         elif self.kernel == "fresnel":
             # unnormalized: exp(i*d*(km-kx²/(2*km))
-            fstemp = np.exp(-1j * d * kx ** 2 / (2 * km))
+            fstemp = xp.exp(-1j * d * kx ** 2 / (2 * km))
         else:
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
         return fstemp
@@ -105,7 +108,7 @@ class RefocusNumpy1D(Refocus):
             Initial 1D field refocused at `distance`
         """
         fft_kernel = self.get_kernel(distance=distance)
-        refoc = np.fft.ifft(self.fft_origin * fft_kernel)
+        refoc = xp.fft.ifft(self.fft_origin * fft_kernel)
         if self.padding:
             refoc = pad.pad_rem(refoc)
         return refoc

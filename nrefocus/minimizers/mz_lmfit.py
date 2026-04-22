@@ -1,6 +1,6 @@
 import copy
 
-import numpy as np
+from .._ndarray_backend import xp
 import lmfit
 
 
@@ -28,7 +28,7 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
         the following arguments: `rf`, `distance`, and `roi`
     interval: tuple of floats
         (minimum, maximum) of interval to search [m]
-    roi: tuple of slices or np.ndarray
+    roi: tuple of slices or xp.ndarray
         Region of interest for which the metric will be minimized.
         If not given, the entire field will be used.
     lmfitkw:
@@ -57,7 +57,7 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
         lmfitkw["method"] = "leastsq"
 
     # normalize fitting interval with wavelength
-    interval = np.array(interval, copy=True) / rf.wavelength
+    interval = xp.array(interval, copy=True) / rf.wavelength
 
     # brute step size is two wavelengths
     brute_step = 2
@@ -65,7 +65,7 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
     # initialize fitter
     params_brute = lmfit.Parameters()
     params_brute.add("focus_wl",
-                     value=np.mean(interval),
+                     value=xp.mean(interval),
                      min=interval[0],
                      max=interval[1],
                      brute_step=brute_step)
@@ -78,7 +78,7 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
                  "roi": roi},
     )
 
-    if np.ptp(interval) <= brute_step:
+    if xp.ptp(interval) <= brute_step:
         # skip the brute step (no step definable)
         fine_params = params_brute
     else:

@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.9', '3.10']
+        python-version: ['3.11', '3.12']
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
@@ -38,7 +38,8 @@ jobs:
         pip freeze
     - name: Test with pytest
       run: |
-        coverage run --source=nrefocus -m pytest tests
+        # ignore the cupy imports, as we don't have a gpu-enabled pipeline setup
+        coverage run --source=nrefocus -m pytest tests --ignore=tests/test_cupy_gpu
     - name: Lint with flake8
       run: |
         flake8 --exclude _version.py .

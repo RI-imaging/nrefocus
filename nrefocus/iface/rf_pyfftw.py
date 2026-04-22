@@ -1,6 +1,6 @@
 import multiprocessing as mp
 
-import numpy as np
+from .._ndarray_backend import xp
 import pyfftw
 
 from .. import pad
@@ -12,7 +12,12 @@ class RefocusPyFFTW(Refocus):
     """Refocusing with FFTW
 
     .. versionadded:: 0.4.0
+
     """
+    backend_expected = "numpy"
+    # pyfftw can't used `cupy` ndarrays
+    backend_incompatible = "cupy"
+
     def _init_fft(self, field, padding):
         """Perform initial Fourier transform of the input field
 
@@ -53,7 +58,7 @@ class RefocusPyFFTW(Refocus):
 
     def propagate(self, distance):
         fft_kernel = self.get_kernel(distance=distance)
-        np.multiply(self.fft_origin, fft_kernel,
+        xp.multiply(self.fft_origin, fft_kernel,
                     out=self._ifft_obj.input_array)
         refoc = self._ifft_obj()
         if self.padding:

@@ -4,13 +4,11 @@ import numpy as np
 import nrefocus
 import pytest
 
-from test_helper import load_cell
-
 
 @pytest.mark.filterwarnings('ignore::nrefocus.minimizers.mz_legacy.'
                             'LegacyDeprecationWarning')
-def test_2d_autofocus_cell_helmholtz_average_gradient():
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+def test_2d_autofocus_cell_helmholtz_average_gradient(cell_field):
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",
@@ -125,8 +123,8 @@ def test_2d_autofocus_fresnel_average_gradient():
 
 @pytest.mark.filterwarnings('ignore::nrefocus.minimizers.mz_legacy.'
                             'LegacyDeprecationWarning')
-def test_2d_autofocus_return_grid_field():
-    rf = nrefocus.iface.RefocusNumpy(field=load_cell("HL60_field.zip"),
+def test_2d_autofocus_return_grid_field(cell_field):
+    rf = nrefocus.iface.RefocusNumpy(field=cell_field,
                                      wavelength=647e-9,
                                      pixel_size=0.139e-6,
                                      kernel="helmholtz",

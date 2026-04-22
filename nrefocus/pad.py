@@ -4,7 +4,7 @@
 """
 from __future__ import division, print_function
 
-import numpy as np
+from ._ndarray_backend import xp
 
 
 def _get_pad_left_right(small, large):
@@ -90,24 +90,24 @@ def _pad_add_1d(av, size, stlen):
 
     padx = _get_pad_left_right(av.shape[0], size[0])
 
-    mask = np.zeros(av.shape, dtype=bool)
+    mask = xp.zeros(av.shape, dtype=bool)
     mask[stlen:-stlen] = True
     border = av[~mask]
     if av.dtype.name.count("complex"):
-        padval = np.average(np.abs(border)) * \
-            np.exp(1j*np.average(np.angle(border)))
+        padval = xp.average(xp.abs(border)) * \
+            xp.exp(1j*xp.average(xp.angle(border)))
     else:
-        padval = np.average(border)
-    if np.__version__[:3] in ["1.7", "1.8", "1.9"]:
+        padval = xp.average(border)
+    if xp.__version__[:3] in ["1.7", "1.8", "1.9"]:
         end_values = ((padval, padval),)
     else:
         end_values = (padval,)
-    bv = np.pad(av,
+    bv = xp.pad(av,
                 padx,
                 mode="linear_ramp",
                 end_values=end_values)
     # roll the array so that the padding values are on the right
-    bv = np.roll(bv, -padx[0], 0)
+    bv = xp.roll(bv, -padx[0], 0)
     return bv
 
 
@@ -118,25 +118,26 @@ def _pad_add_2d(av, size, stlen):
     padx = _get_pad_left_right(av.shape[0], size[0])
     pady = _get_pad_left_right(av.shape[1], size[1])
 
-    mask = np.zeros(av.shape, dtype=bool)
+    mask = xp.zeros(av.shape, dtype=bool)
     mask[stlen:-stlen, stlen:-stlen] = True
     border = av[~mask]
     if av.dtype.name.count("complex"):
-        padval = np.average(np.abs(border)) * \
-            np.exp(1j*np.average(np.angle(border)))
+        padval = xp.average(xp.abs(border)) * \
+            xp.exp(1j*xp.average(xp.angle(border)))
     else:
-        padval = np.average(border)
-    if np.__version__[:3] in ["1.7", "1.8", "1.9"]:
+        padval = xp.average(border)
+    padval = padval.item()  # with cupy 0d array we have to get the value
+    if xp.__version__[:3] in ["1.7", "1.8", "1.9"]:
         end_values = ((padval, padval), (padval, padval))
     else:
         end_values = (padval,)
-    bv = np.pad(av,
+    bv = xp.pad(av,
                 (padx, pady),
                 mode="linear_ramp",
                 end_values=end_values)
     # roll the array so that the padding values are on the right
-    bv = np.roll(bv, -padx[0], 0)
-    bv = np.roll(bv, -pady[0], 1)
+    bv = xp.roll(bv, -padx[0], 0)
+    bv = xp.roll(bv, -pady[0], 1)
     return bv
 
 

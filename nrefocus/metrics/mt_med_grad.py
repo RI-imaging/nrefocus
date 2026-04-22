@@ -1,4 +1,4 @@
-import numpy as np
+from .._ndarray_backend import xp
 
 
 def metric_med_gradient(rfi, distance, roi=None, **kwargs):
@@ -8,7 +8,7 @@ def metric_med_gradient(rfi, distance, roi=None, **kwargs):
     -----
     The absolute value of the gradient is returned.
     """
-    data = np.abs(rfi.propagate(distance))
+    data = xp.abs(rfi.propagate(distance))
     if roi is not None:
         data = data[roi]
-    return np.median(np.array(np.gradient(data))**2)
+    return xp.median(xp.array(xp.gradient(data))**2)

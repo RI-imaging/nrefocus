@@ -1,4 +1,4 @@
-import numpy as np
+from .._ndarray_backend import xp
 
 
 class MetricSpectrumValueError(ValueError):
@@ -21,11 +21,13 @@ def metric_spectrum(rfi, distance, roi=None, **kwargs):
 
     # Filter Fourier transform
     fftdata[0, 0] = 0
-    kx = 2 * np.pi * np.fft.fftfreq(fftdata.shape[0]).reshape(1, -1)
-    ky = 2 * np.pi * np.fft.fftfreq(fftdata.shape[1]).reshape(-1, 1)
-    kmax = (2 * np.pi) / (2 * wavelength_px)
-    fftdata[np.where(kx ** 2 + ky ** 2 > kmax ** 2)] = 0
+    kx = 2 * xp.pi * xp.fft.fftfreq(fftdata.shape[0]).reshape(1, -1)
+    ky = 2 * xp.pi * xp.fft.fftfreq(fftdata.shape[1]).reshape(-1, 1)
+    kmax = (2 * xp.pi) / (2 * wavelength_px)
+    fftdata[xp.where(kx ** 2 + ky ** 2 > kmax ** 2)] = 0
 
-    spec = np.sum(np.log(1 + np.abs(fftdata))) / np.sqrt(np.prod(rfi.shape))
+    spec = xp.sum(xp.log(1 + xp.abs(fftdata))) / xp.sqrt(
+        xp.prod(xp.array(rfi.shape))
+    )
 
     return spec

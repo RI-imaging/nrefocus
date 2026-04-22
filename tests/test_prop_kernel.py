@@ -7,6 +7,8 @@ import pytest
 
 import nrefocus
 
+from .helper_methods import skip_if_missing
+
 data_path = pathlib.Path(__file__).parent / "data"
 
 
@@ -36,16 +38,16 @@ def test_prop_kernel(kernel, reference_file):
     assert np.allclose(np.array(refocused).flatten().view(float), reference)
 
 
+@skip_if_missing("pyfftw")
 @pytest.mark.parametrize(
     "kernel", [("helmholtz"), ("fresnel"), ]
 )
 def test_prop_kernel_refocus_interfaces(kernel):
-    """compare refocus interface outputs for kernels"""
+    """compare refocus interface outputs (non-cupy) for kernels"""
     pixel_size = 1e-6
     distance = 2.13 * pixel_size
     field = np.arange(256).reshape(16, 16)
-    refocus_iface = [nrefocus.RefocusNumpy, nrefocus.RefocusPyFFTW,
-                     nrefocus.RefocusCupy]
+    refocus_iface = [nrefocus.RefocusNumpy, nrefocus.RefocusPyFFTW]
 
     fft_kernels = []
     for iface in refocus_iface:
@@ -54,9 +56,9 @@ def test_prop_kernel_refocus_interfaces(kernel):
         fft_kernels.append(rf.get_kernel(distance=distance))
 
     assert np.allclose(fft_kernels[0], fft_kernels[1])
-    assert np.allclose(fft_kernels[0], fft_kernels[2])
 
 
+@skip_if_missing("cupy")
 @pytest.mark.parametrize(
     "kernel", [("helmholtz"), ("fresnel"), ]
 )

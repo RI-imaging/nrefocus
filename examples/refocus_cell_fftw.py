@@ -1,4 +1,4 @@
-"""2D Refocusing of an HL60 cell on the GPU with Cupy
+"""2D Refocusing of an HL60 cell on the GPU with PyFFTW
 
 The data show a live HL60 cell imaged with quadriwave lateral shearing
 interferometry (SID4Bio, Phasics S.A., France).

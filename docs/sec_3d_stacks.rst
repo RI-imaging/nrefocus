@@ -1,8 +1,8 @@
+.. _sec_3d_stacks:
+
 =========
 3D stacks
 =========
-
-.. _sec_3d_stacks:
 
 Since version 0.7.0, the :class:`.RefocusNumpy`, :class:`.RefocusPyFFTW` and
 :class:`.RefocusCupy` interfaces accept either a single 2D field shaped
@@ -11,6 +11,12 @@ The last two axes are always interpreted as the spatial axes and any leading
 axes are treated as batch dimensions. If you pass an
 ``n``-dimensional input, you get an output array with the same
 ``n``-dimensional shape.
+
+.. admonition:: `nrefocus.refocus_stack`
+
+	The convenience function `nrefocus.refocus_stack` may act strangely with a 3D
+	input for now. This is expected to be fixed/removed in future.
+
 
 .. code-block:: python
 

@@ -1,6 +1,6 @@
-===================
-Basics of qpretrieve
-===================
+==================
+Basics of nrefocus
+==================
 
 .. _sec_getting_started_basics:
 

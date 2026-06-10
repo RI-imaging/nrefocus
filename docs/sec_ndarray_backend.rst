@@ -1,7 +1,7 @@
+.. _sec_doc_ndarray_backend:
+
 Setting the NDArray Backend
 ===========================
-
-.. _sec_doc_ndarray_backend:
 
 Since version 0.6.0, `nrefocus` allows the user to leverage their CUDA GPU
 via the :class:`.RefocusCupy` refocus interface and the ``CuPy`` library.

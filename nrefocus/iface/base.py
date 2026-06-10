@@ -246,8 +246,8 @@ class Refocus(ABC):
         # This allows refocusing batched stacks such as (n, y, x).
         ny = self.fft_origin.shape[-2]
         nx = self.fft_origin.shape[-1]
-        kx = (xp.fft.fftfreq(nx) * twopi).reshape(-1, 1)
-        ky = (xp.fft.fftfreq(ny) * twopi).reshape(1, -1)
+        kx = (xp.fft.fftfreq(nx) * twopi).reshape(1, -1)
+        ky = (xp.fft.fftfreq(ny) * twopi).reshape(-1, 1)
         fstemp = self._evaluate_kernel(kx, ky, km, d)
         return fstemp
 

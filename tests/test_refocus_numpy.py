@@ -59,6 +59,26 @@ def test_refocus_numpy_stack_matches_per_slice():
     assert np.allclose(out_stack, out_expected, rtol=1e-12, atol=1e-12)
 
 
+def test_refocus_numpy_nonsquare_nopadding():
+    rng = np.random.default_rng(0)
+    stack = (rng.normal(size=(5, 16, 12)) + 1j * rng.normal(size=(5, 16, 12))
+             ).astype(np.complex128)
+    pixel_size = 1e-6
+    dist = 2.13 * pixel_size
+
+    rf_stack = nrefocus.RefocusNumpy(
+        field=stack,
+        wavelength=8.25 * pixel_size,
+        pixel_size=pixel_size,
+        medium_index=1.533,
+        distance=0,
+        kernel="helmholtz",
+        padding=False,
+    )
+    out_stack = rf_stack.propagate(distance=dist)
+
+    assert out_stack.shape == stack.shape
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

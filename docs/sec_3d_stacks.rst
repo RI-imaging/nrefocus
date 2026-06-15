@@ -14,8 +14,10 @@ axes are treated as batch dimensions. If you pass an
 
 .. admonition:: `nrefocus.refocus_stack`
 
-	The convenience function `nrefocus.refocus_stack` may act strangely with a 3D
-	input for now. This is expected to be fixed/removed in future.
+	The convenience functions `nrefocus.refocus_stack` and
+	`nrefocus.autofocus_stack` may be removed in the
+	future, as  `nrefocus` now accepts in 3D data. See
+	`Issue #28 <https://github.com/RI-imaging/nrefocus/issues/28>`_
 
 
 .. code-block:: python

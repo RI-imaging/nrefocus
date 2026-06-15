@@ -4,21 +4,20 @@ import numpy as np
 
 import nrefocus
 
-
 data_path = pathlib.Path(__file__).parent / "data"
 
 
 def test_2d_refocus1():
     pixel_size = 1e-6
     rf = nrefocus.RefocusNumpy(field=np.arange(256).reshape(16, 16),
-                               wavelength=8.25*pixel_size,
+                               wavelength=8.25 * pixel_size,
                                pixel_size=pixel_size,
                                medium_index=1.533,
                                distance=0,
                                kernel="helmholtz",
                                padding=False)
 
-    refocused = rf.propagate(distance=2.13*pixel_size)
+    refocused = rf.propagate(distance=2.13 * pixel_size)
     reference = np.loadtxt(data_path / "test_2d_refocus1.txt")
     assert np.allclose(np.array(refocused).flatten().view(float), reference)
 
@@ -78,6 +77,7 @@ def test_refocus_numpy_nonsquare_nopadding():
     out_stack = rf_stack.propagate(distance=dist)
 
     assert out_stack.shape == stack.shape
+
 
 if __name__ == "__main__":
     # Run all tests

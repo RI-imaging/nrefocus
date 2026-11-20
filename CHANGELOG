@@ -1,3 +1,5 @@
+0.8.1
+ - enh: add convenience function for stacks of autofocus on the gpu
 0.8.0
  - feat: allow user to specify input and output domains (#26, #27)
 0.7.0

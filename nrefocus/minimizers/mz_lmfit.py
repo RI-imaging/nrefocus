@@ -1,13 +1,19 @@
 import copy
+import numpy as np
 
 from .._ndarray_backend import xp
 import lmfit
 
 
 def residuals(params, metric_func, rf, roi):
-    return metric_func(rf,
-                       distance=params["focus_wl"].value * rf.wavelength,
-                       roi=roi)
+    value = metric_func(rf,
+                        distance=params["focus_wl"].value * rf.wavelength,
+                        roi=roi)
+    # lmfit's solvers require NumPy-compatible residuals. For RefocusCupy,
+    # transfer only this scalar; the propagated field and metric stay on GPU.
+    if xp.is_cupy():
+        value = value.item()
+    return value
 
 
 def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
@@ -34,7 +40,9 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
     lmfitkw:
         Additional keyword arguments for :func:`lmfit.minimize
         <lmfit.minimizer.minimize>` used in the fine grid search.
-        The default `method` is "leastsq".
+        The default `method` is "leastsq". With CuPy, lmfit runs on the CPU
+        and each metric evaluation runs on the GPU; only the scalar residual
+        is copied back to the CPU.
     ret_grid: bool
         return focus positions and metric values of the coarse
         grid search
@@ -57,7 +65,12 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
         lmfitkw["method"] = "leastsq"
 
     # normalize fitting interval with wavelength
-    interval = xp.array(interval, copy=True) / rf.wavelength
+    if xp.is_cupy():
+        # Optimizer parameters stay on the CPU even when each residual is
+        # evaluated by a GPU-backed Refocus interface.
+        interval = np.asarray(xp.asnumpy(xp.asarray(interval))) / rf.wavelength
+    else:
+        interval = xp.array(interval, copy=True) / rf.wavelength
 
     # brute step size is two wavelengths
     brute_step = 2
@@ -78,7 +91,7 @@ def minimize_lmfit(rf, metric_func, interval, roi=None, lmfitkw=None,
                  "roi": roi},
     )
 
-    if xp.ptp(interval) <= brute_step:
+    if np.ptp(interval) <= brute_step:
         # skip the brute step (no step definable)
         fine_params = params_brute
     else:

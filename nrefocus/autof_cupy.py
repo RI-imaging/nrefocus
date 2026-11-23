@@ -6,15 +6,14 @@ from . import iface
 
 
 def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
-                         metric="average gradient", minimizer="legacy",
+                         metric="average gradient", minimizer="cupy",
                          minimizer_kwargs=None, padding=True,
-                         num_streams=1, copy=True):
+                         num_streams=4, copy=True):
     """Autofocus each 2D frame in a stack using CuPy CUDA streams.
 
     Each frame gets an independent focus search. Up to ``num_streams`` frame
     searches are submitted concurrently, each on its own non-blocking CUDA
-    stream. The legacy minimizer is used because ``lmfit`` requires NumPy
-    scalar values and cannot minimize CuPy metrics.
+    stream. The batched CuPy minimizer evaluates candidate distances together.
 
     Parameters
     ----------
@@ -31,9 +30,13 @@ def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
     metric : str
         Metric name supported by nrefocus.
     minimizer : str
-        Must be ``"legacy"``; CuPy metrics are not compatible with lmfit.
+        ``"cupy"`` evaluates candidate distances in batches; ``"legacy"``
+        retains the serial candidate loop; ``"lmfit"`` runs lmfit on the CPU
+        and evaluates each metric on the GPU.
     minimizer_kwargs : dict, optional
-        Keyword arguments passed to the legacy minimizer.
+        Keyword arguments passed to the selected minimizer. The batched
+        ``"cupy"`` minimizer supports ``coarse_acc`` and ``fine_acc``;
+        ``"lmfit"`` accepts lmfit minimizer options.
     padding : bool
         Apply spatial padding before propagation.
     num_streams : int
@@ -47,6 +50,7 @@ def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
         One optimal distance per input frame, in pixels.
     focused_stack : cupy.ndarray
         Refocused stack, in input frame order.
+
     """
     if not xp.is_cupy():
         raise RuntimeError(
@@ -54,12 +58,11 @@ def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
             "autofocus_stack_cupy().")
     if len(fieldstack.shape) != 3:
         raise ValueError("`fieldstack` must have shape (n, y, x).")
-    if fieldstack.shape[0] == 0:
-        raise ValueError("`fieldstack` must contain at least one frame.")
     if num_streams < 1:
         raise ValueError("`num_streams` must be at least 1.")
-    if minimizer != "legacy":
-        raise ValueError("CuPy autofocus supports only minimizer='legacy'.")
+    if minimizer not in ("legacy", "cupy", "lmfit"):
+        raise ValueError("CuPy autofocus currently supports "
+                         "minimizer='cupy', 'legacy', or 'lmfit'.")
 
     # Transfer the stack once, then give each stream a view of its own frame.
     gpu_stack = xp.array(fieldstack, copy=copy)
@@ -80,7 +83,7 @@ def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
             )
             return rf.autofocus(
                 metric=metric,
-                minimizer="legacy",
+                minimizer=minimizer,
                 interval=xp.asarray(ival),
                 roi=roi,
                 minimizer_kwargs=kwargs,

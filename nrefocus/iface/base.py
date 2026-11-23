@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import warnings
 import numexpr as ne
+import numbers
 
 from .._ndarray_backend import xp, NDArrayBackendWarning
 from .. import metrics
@@ -172,7 +173,8 @@ class Refocus(ABC):
         minimizer: str
             - "legacy": custom nrefocus minimizer
             - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize
-              <lmfit.minimizer.minimize>`)
+              <lmfit.minimizer.minimize>`); with CuPy, the optimizer runs on
+              the CPU and each scalar metric evaluation runs on the GPU.
         roi: list or tuple or slice or ndarray
             Region of interest for which the metric will be minimized.
             The axes below use the numpy indexing order.
@@ -257,7 +259,7 @@ class Refocus(ABC):
 
         elif self.kernel == "fresnel":
             if xp.is_cupy():
-                fstemp = xp.exp(-1j * d * (kx**2 + ky**2) / (2 * km))
+                fstemp = xp.exp(-1j * d * (kx ** 2 + ky ** 2) / (2 * km))
             else:
                 # unnormalized: exp(i*d*(km-(kx²+ky²)/(2*km))
                 fstemp = ne.evaluate(
@@ -267,12 +269,24 @@ class Refocus(ABC):
             raise KeyError(f"Unknown propagation kernel: '{self.kernel}'")
         return fstemp
 
-    def get_kernel(self, distance):
+    def get_kernel(self, distance: float | xp.ndarray):
         """Return the current kernel
 
-        Ther kernel type `self.kernel` is used
+        The kernel type `self.kernel` is used
         (see :func:`Refocus.__init__`)
+
+        Returns
+        -------
+        A scalar distance returns a spatial kernel. A one-dimensional array of
+        distances returns kernels with shape ``(n_distances, y, x)`` for
+        batched propagation.
+
         """
+        if not isinstance(distance, numbers.Real) and getattr(
+                distance, "ndim", None) not in (0, 1):
+            raise ValueError("'distance' must be either a scalar "
+                             "(float, int, or 0D array) or a 1D array.")
+
         nm = self.medium_index
         res = self.wavelength / self.pixel_size
         d = (distance - self.distance) / self.pixel_size
@@ -285,6 +299,12 @@ class Refocus(ABC):
         nx = self.fft_origin.shape[-1]
         kx = (xp.fft.fftfreq(nx) * twopi).reshape(1, -1)
         ky = (xp.fft.fftfreq(ny) * twopi).reshape(-1, 1)
+        # A vector of distances adds a leading batch axis, allowing a
+        # minimizer to propagate many candidate planes in one FFT call.
+        if getattr(d, "ndim", 0):
+            d = d.reshape((-1, 1, 1))
+            kx = kx.reshape((1, 1, -1))
+            ky = ky.reshape((1, -1, 1))
         fstemp = self._evaluate_kernel(kx, ky, km, d)
         return fstemp
 

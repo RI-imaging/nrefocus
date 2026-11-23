@@ -72,33 +72,78 @@ def test_autofocus_cupy_stack_per_frame(set_ndarray_backend_to_cupy):
     stack = np.stack([plane * np.exp(1j * phase)
                       for phase in (0.0, 0.2, 0.4)])
 
-    distances, focused = nrefocus.autofocus_stack_cupy(
+    distances_cupy, focused_cupy = nrefocus.autofocus_stack_cupy(
         stack, nm=1.333, res=8.25, ival=(-4, 4),
-        metric="average gradient", padding=False,
+        metric="average gradient", minimizer="cupy", padding=False,
         roi=(1, 1, 15, 11), num_streams=2)
 
-    focused_cpu = focused.get()
-    assert len(distances) == stack.shape[0]
-    assert focused_cpu.shape == stack.shape
-    assert np.all(np.isfinite([float(d.get()) for d in distances]))
+    assert len(distances_cupy) == stack.shape[0]
+    assert focused_cupy.get().shape == stack.shape
+
     # check that the autofocus prop works as expected
-    for frame, distance in enumerate(distances):
+    for frame, distance in enumerate(distances_cupy):
         reference = nrefocus.RefocusCupy(
             field=stack[frame], wavelength=8.25, pixel_size=1,
             medium_index=1.333, kernel="helmholtz", padding=False
         ).propagate(distance).get()
-        assert np.allclose(focused_cpu[frame], reference)
+        assert np.allclose(focused_cupy.get()[frame], reference)
 
-    # Convert GPU results before switching the active backend for the CPU run.
-    distances_gpu = np.asarray([float(distance.get())
-                                for distance in distances])
-    focused_gpu = focused.get()
     nrefocus.set_ndarray_backend("numpy")
-
     # Compare against the regular CPU multiprocessing implementation.
     distances2, focused2 = nrefocus.autofocus_stack(
         stack, nm=1.333, res=8.25, ival=(-4, 4),
         metric="average gradient", minimizer="legacy", padding=False,
         roi=(1, 1, 15, 11), num_cpus=1)
-    assert np.allclose(distances2, distances_gpu)
-    assert np.allclose(focused2, focused_gpu)
+
+    # convert from list
+    distances_cupy = np.asarray([float(distance.get())
+                                 for distance in distances_cupy])
+    assert np.allclose(distances2, distances_cupy)
+    assert np.allclose(focused2, focused_cupy.get())
+
+
+@skip_if_missing("cupy")
+def test_cupy_minimizer_matches_legacy_minimizer(set_ndarray_backend_to_cupy):
+    """cupy minimizer is the same as the legacy one."""
+    rng = np.random.default_rng(5)
+    field = rng.normal(size=(18, 14)) + 1j * rng.normal(size=(18, 14))
+    common = dict(nm=1.333, res=8.25, ival=(-4, 4),
+                  metric="average gradient", padding=False,
+                  roi=(1, 1, 17, 13))
+    rf = nrefocus.RefocusCupy(
+        field=field, wavelength=common["res"], pixel_size=1,
+        medium_index=common["nm"], kernel="helmholtz",
+        padding=common["padding"])
+    autofocus_args = dict(interval=common["ival"],
+                          metric=common["metric"], roi=common["roi"],
+                          ret_field=True,
+                          minimizer_kwargs={"coarse_acc": 2})
+    batched_distance, batched_field = rf.autofocus(
+        **autofocus_args, minimizer="cupy")
+    legacy_distance, legacy_field = rf.autofocus(
+        **autofocus_args, minimizer="legacy")
+    assert np.isclose(float(batched_distance.get()),
+                      float(legacy_distance.get()), atol=1e-8)
+    assert np.allclose(batched_field.get(), legacy_field.get(), atol=1e-8)
+
+
+@skip_if_missing("cupy")
+def test_lmfit_minimizer_with_cupy_matches_numpy(set_ndarray_backend_to_cupy):
+    """lmfit can optimize a GPU-evaluated metric through scalar transfers."""
+    rng = np.random.default_rng(9)
+    field = rng.normal(size=(18, 14)) + 1j * rng.normal(size=(18, 14))
+    common = dict(wavelength=8.25, pixel_size=1, medium_index=1.333,
+                  kernel="helmholtz", padding=False)
+    autofocus_args = dict(interval=(-4, 4), metric="average gradient",
+                          roi=(1, 1, 17, 13), minimizer="lmfit",
+                          ret_field=True)
+
+    rf_cupy = nrefocus.RefocusCupy(field=field, **common)
+    distance_cupy, focused_cupy = rf_cupy.autofocus(**autofocus_args)
+
+    nrefocus.set_ndarray_backend("numpy")
+    rf_numpy = nrefocus.RefocusNumpy(field=field, **common)
+    distance_numpy, focused_numpy = rf_numpy.autofocus(**autofocus_args)
+
+    assert np.isclose(distance_cupy, distance_numpy, atol=1e-8)
+    assert np.allclose(focused_cupy.get(), focused_numpy, atol=1e-8)

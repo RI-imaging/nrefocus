@@ -42,8 +42,7 @@ def main():
         else:
             print("No CUDA device found; showing CPU comparisons only.")
     except Exception as exc:
-        print("CuPy/CUDA unavailable ({}); showing CPU comparisons only.".format(
-            exc))
+        print(f"CuPy/CUDA unavailable ({exc}); showing CPU comparisons only.")
 
     results = []
     for backend, minimizer in cases:
@@ -52,8 +51,8 @@ def main():
                    if minimizer in ("legacy", "legacy_cupy") else {})
         timings = []
 
-        # Warm up once, then time full stack calls; synchronize and download GPU
-        # results so the recorded time includes completed work.
+        # Warm up once, then time full stack calls; synchronize and download
+        # GPU results so the recorded time includes completed work.
         for repeat in range(TIMING_REPEATS + 1):
             start = time.perf_counter()
             if backend == "cupy":
@@ -149,8 +148,9 @@ def main():
 
     # Summarize median focus, mean metric, and stack timing for each minimizer.
     table_ax.axis("off")
-    columns = ["Minimizer\nname", "Focus median\n(µm)", "Mean metric\nat focus",
-               "Stack time\nmedian (s)", "Median Δ vs CPU\nlmfit (nm)"]
+    columns = ["Minimizer\nname", "Focus median\n(µm)",
+               "Mean metric\nat focus", "Stack time\nmedian (s)",
+               "Median Δ vs CPU\nlmfit (nm)"]
     rows = [[
         'minimizer="{}"'.format(result["minimizer"]),
         "{:.6f}".format(np.median(result["distances"]) * PIXEL_SIZE * 1e6),

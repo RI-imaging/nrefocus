@@ -6,8 +6,8 @@ from .._ndarray_backend import xp
 from .mz_legacy import LegacyDeprecationWarning
 
 
-def minimize_cupy(rf, metric_func, interval, roi=None, coarse_acc=1,
-                  fine_acc=.005, ret_grid=False, ret_field=False):
+def minimize_legacy_cupy(rf, metric_func, interval, roi=None, coarse_acc=1,
+                         fine_acc=.005, ret_grid=False, ret_field=False):
     """Minimize an autofocus metric with batched CuPy propagation.
 
     This follows the legacy minimizer's coarse scan, local fine scans, and
@@ -48,13 +48,15 @@ def minimize_cupy(rf, metric_func, interval, roi=None, coarse_acc=1,
 
     """
     if not xp.is_cupy():
-        raise RuntimeError("minimize_cupy requires the CuPy backend.")
+        raise RuntimeError("minimize_legacy_cupy requires the CuPy backend.")
     if metric_func.__name__ != "metric_average_gradient":
         raise ValueError("The batched CuPy minimizer currently supports only "
                          "the 'average gradient' metric.")
-    warnings.warn("The 'cupy' minimizer follows the legacy coarse-to-fine "
+    warnings.warn("The 'legacy_cupy' minimizer follows the legacy "
+                  "coarse-to-fine "
                   "search strategy. The legacy minimizer is deprecated; "
-                  "use minimizer='lmfit' for lmfit-based refinement.",
+                  "use minimizer='lmfit_cupy' for GPU-native LM refinement "
+                  "or 'lmfit' for lmfit/SciPy refinement.",
                   LegacyDeprecationWarning)
 
     n = int(100 / coarse_acc)

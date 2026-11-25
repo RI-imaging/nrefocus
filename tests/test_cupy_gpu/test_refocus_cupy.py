@@ -74,7 +74,7 @@ def test_autofocus_cupy_stack_per_frame(set_ndarray_backend_to_cupy):
 
     distances_cupy, focused_cupy = nrefocus.autofocus_stack_cupy(
         stack, nm=1.333, res=8.25, ival=(-4, 4),
-        metric="average gradient", minimizer="cupy", padding=False,
+        metric="average gradient", minimizer="legacy_cupy", padding=False,
         roi=(1, 1, 15, 11), num_streams=2)
 
     assert len(distances_cupy) == stack.shape[0]
@@ -103,8 +103,9 @@ def test_autofocus_cupy_stack_per_frame(set_ndarray_backend_to_cupy):
 
 
 @skip_if_missing("cupy")
-def test_cupy_minimizer_matches_legacy_minimizer(set_ndarray_backend_to_cupy):
-    """cupy minimizer is the same as the legacy one."""
+def test_legacy_cupy_minimizer_matches_legacy_minimizer(
+        set_ndarray_backend_to_cupy):
+    """The batched legacy CuPy minimizer matches the NumPy legacy result."""
     rng = np.random.default_rng(5)
     field = rng.normal(size=(18, 14)) + 1j * rng.normal(size=(18, 14))
     common = dict(nm=1.333, res=8.25, ival=(-4, 4),
@@ -119,7 +120,7 @@ def test_cupy_minimizer_matches_legacy_minimizer(set_ndarray_backend_to_cupy):
                           ret_field=True,
                           minimizer_kwargs={"coarse_acc": 2})
     batched_distance, batched_field = rf.autofocus(
-        **autofocus_args, minimizer="cupy")
+        **autofocus_args, minimizer="legacy_cupy")
     legacy_distance, legacy_field = rf.autofocus(
         **autofocus_args, minimizer="legacy")
     assert np.isclose(float(batched_distance.get()),
@@ -147,3 +148,53 @@ def test_lmfit_minimizer_with_cupy_matches_numpy(set_ndarray_backend_to_cupy):
 
     assert np.isclose(distance_cupy, distance_numpy, atol=1e-8)
     assert np.allclose(focused_cupy.get(), focused_numpy, atol=1e-8)
+
+
+@skip_if_missing("cupy")
+def test_lmfit_cupy_finds_quadratic_minimum_and_respects_bounds(
+        set_ndarray_backend_to_cupy):
+    """The CuPy LM update converges on a known one-dimensional objective."""
+    import cupy as cp
+
+    class QuadraticRefocus:
+        wavelength = 1.0
+
+        @staticmethod
+        def propagate(distance):
+            distance = cp.asarray(distance).reshape(-1, 1, 1)
+            y = cp.arange(8, dtype=cp.float64).reshape(1, 8, 1)
+            x = cp.arange(8, dtype=cp.float64).reshape(1, 1, 8)
+            amplitude = cp.sqrt((distance - 0.37) ** 2 + 0.01)
+            return amplitude * (x + 2 * y)
+
+    rf = QuadraticRefocus()
+    distance = nrefocus.minimizers.minimize_lmfit_cupy(
+        rf, nrefocus.metrics.metric_average_gradient, (-1, 1),
+        coarse_step=0.25)
+    assert np.isclose(float(distance.get()), 0.37, atol=1e-6)
+    bounded_distance = nrefocus.minimizers.minimize_lmfit_cupy(
+        rf, nrefocus.metrics.metric_average_gradient, (0, 0.2),
+        coarse_step=0.05)
+    assert np.isclose(float(bounded_distance.get()), 0.2, atol=1e-6)
+
+
+@skip_if_missing("cupy")
+def test_lmfit_cupy_agrees_with_lmfit(set_ndarray_backend_to_cupy,
+                                      cell_field):
+    """GPU-native fitting agrees with the lmfit reference within tolerance."""
+    wavelength = 647e-9
+    rf = nrefocus.RefocusCupy(
+        field=cell_field, wavelength=wavelength, pixel_size=0.139e-6,
+        kernel="helmholtz")
+    kwargs = dict(interval=(-5e-6, 5e-6), metric="average gradient")
+    distance_gpu, (grid, values), focused = rf.autofocus(
+        **kwargs, minimizer="lmfit_cupy", ret_grid=True, ret_field=True)
+    distance_lmfit = rf.autofocus(**kwargs, minimizer="lmfit")
+
+    normalized_gpu = float(distance_gpu.get()) / wavelength
+    normalized_lmfit = distance_lmfit / wavelength
+    assert np.isclose(normalized_gpu, normalized_lmfit,
+                      rtol=1e-4, atol=1e-7)
+    assert grid.ndim == values.ndim == 1
+    assert grid.shape == values.shape
+    assert np.allclose(focused.get(), rf.propagate(distance_gpu).get())

@@ -45,10 +45,10 @@ def autofocus_stack_data():
 
 @pytest.mark.parametrize(
     "method",
-    ["autofocus", "autofocus_stack", "autofocus_stack_gpu_cupy",
-     "autofocus_stack_gpu_lmfit"],
+    ["autofocus", "autofocus_stack", "autofocus_stack_gpu_legacy_cupy",
+     "autofocus_stack_gpu_lmfit", "autofocus_stack_gpu_lmfit_cupy"],
     ids=["autofocus", "autofocus_stack_cpu", "autofocus_stack_gpu_batched",
-         "autofocus_stack_gpu_lmfit"],
+         "autofocus_stack_gpu_lmfit", "autofocus_stack_gpu_lmfit_cupy"],
 )
 def test_bm_autofocus_stack(benchmark, method, autofocus_stack_data):
     """Benchmark equivalent per-frame autofocus workloads.
@@ -108,8 +108,11 @@ def test_bm_autofocus_stack(benchmark, method, autofocus_stack_data):
     if method == "autofocus_stack_gpu_lmfit":
         gpu_common["minimizer"] = "lmfit"
         gpu_common["minimizer_kwargs"] = {}
+    elif method == "autofocus_stack_gpu_lmfit_cupy":
+        gpu_common["minimizer"] = "lmfit_cupy"
+        gpu_common["minimizer_kwargs"] = {}
     else:
-        gpu_common["minimizer"] = "cupy"
+        gpu_common["minimizer"] = "legacy_cupy"
     upload_start = time.perf_counter()
     gpu_stack = cp.asarray(fieldstack)
     cp.cuda.get_current_stream().synchronize()

@@ -172,9 +172,13 @@ class Refocus(ABC):
             - "med gradient" : median gradient metric of amplitude
         minimizer: str
             - "legacy": custom nrefocus minimizer
+            - "legacy_cupy": batched legacy-style minimizer for the CuPy
+              backend
             - "lmfit": lmfit-based minimizer (uses :func:`lmfit.minimize
               <lmfit.minimizer.minimize>`); with CuPy, the optimizer runs on
               the CPU and each scalar metric evaluation runs on the GPU.
+            - "lmfit_cupy": CuPy-native one-parameter LM refinement for the
+              average-gradient metric.
         roi: list or tuple or slice or ndarray
             Region of interest for which the metric will be minimized.
             The axes below use the numpy indexing order.

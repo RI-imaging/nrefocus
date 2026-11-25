@@ -1,15 +1,20 @@
-"""Compare CPU and GPU legacy/lmfit autofocus on a 20-frame HL60 stack.
+"""Compare available Minimizers for Autofocus
+
+We currently have an lmfit (recommended) minimizer for CPU and GPU, as well
+as a legacy minimizer for both CPU and GPU. See the figure below for details on
+accuracy and speed.
+
+The HL60 cell data used is described in `refocus_cell.py` and is stacked here
+for more comparable timings.
 
 Run from the repository root with::
 
     python examples/compare_minimizers.py
 
-The figure shows the middle frame's metric search and focused amplitude for
-each minimizer. The table reports middle-frame focus results and full-stack
-runtime. GPU results are omitted if CuPy or a CUDA device is unavailable.
 """
 import statistics
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,18 +28,18 @@ RES = WAVELENGTH / PIXEL_SIZE
 INTERVAL = (-5e-6 / PIXEL_SIZE, 5e-6 / PIXEL_SIZE)
 ROI = (slice(8, -8), slice(8, -8))
 _TIMING_REPEATS = 3
-_NFRAMES = 20
+_NFRAMES = 10
 
 
 def _host_array(value):
-    """Return a NumPy view/copy of either a NumPy or CuPy array."""
+    '''Return a NumPy view/copy of either a NumPy or CuPy array.'''
     if hasattr(value, "get"):
         return value.get()
     return np.asarray(value)
 
 
 def _make_stack(field):
-    """Make n distinct planes by propagating the input across focus offsets."""
+    '''Make n distinct planes by propagating the input across focus offsets.'''
     nrefocus.set_ndarray_backend("numpy")
     rf = nrefocus.iface.RefocusNumpy(
         field=field, wavelength=RES, pixel_size=1, medium_index=1.333,
@@ -43,7 +48,7 @@ def _make_stack(field):
 
 
 def _run_case(fieldstack, backend, minimizer):
-    """Run one stack autofocus case and collect median timing and outputs."""
+    '''Run one stack autofocus case and collect median timing and outputs.'''
     nrefocus.set_ndarray_backend(backend)
     if backend == "cupy":
         import cupy as cp
@@ -52,7 +57,7 @@ def _run_case(fieldstack, backend, minimizer):
                if minimizer in ("legacy", "legacy_cupy") else {})
 
     def run_stack():
-        """Run and synchronize one complete stack autofocus call."""
+        '''Run and synchronize one complete stack autofocus call.'''
         start = time.perf_counter()
         if backend == "cupy":
             distances, focused = nrefocus.autofocus_stack_cupy(
@@ -108,7 +113,7 @@ def _run_case(fieldstack, backend, minimizer):
 
 
 def main():
-    """Run four stack comparisons and display plots plus a summary table."""
+    '''Run four stack comparisons and display plots plus a summary table.'''
     field = load_cell("HL60_field.zip")
     fieldstack = _make_stack(field)
     cases = [("numpy", "legacy"), ("numpy", "lmfit")]
@@ -131,8 +136,8 @@ def main():
                            row["minimizer"] == "lmfit")
     reference = lmfit_reference["distances"]
 
-    fig = plt.figure(figsize=(15, 9), constrained_layout=True)
-    layout = fig.add_gridspec(4, 4, height_ratios=(1.1, 0.16, 1.0, 0.8))
+    fig = plt.figure(figsize=(15, 10), constrained_layout=True)
+    layout = fig.add_gridspec(4, 4, height_ratios=(1.1, 0.16, 1.0, 1.0))
     image_axes = [fig.add_subplot(layout[0, i]) for i in range(4)]
     curve_ax = fig.add_subplot(layout[2, :])
     table_ax = fig.add_subplot(layout[3, :])
@@ -176,9 +181,9 @@ def main():
                      fraction=0.025, label="Amplitude")
 
     table_ax.axis("off")
-    columns = ["Minimizer", "Median focus (µm)", "Mean metric at focus",
-               "Stack time (s, median of 3)",
-               'Median Δ from minimizer="lmfit" (nm)']
+    columns = ["Minimizer\nname", "Focus median\n(µm)",
+               "Mean metric\nat focus", "Stack time\nmedian (s)",
+               "Median Δ vs CPU\nlmfit (nm)"]
     rows = [[
         'minimizer="{}"'.format(result["minimizer"]),
         "{:.6f}".format(np.median(result["distances"]) * PIXEL_SIZE * 1e6),
@@ -187,11 +192,18 @@ def main():
         "{:+.2f}".format(np.median(
             (result["distances"] - reference) * PIXEL_SIZE * 1e9)),
     ] for result in results]
-    table_ax.table(cellText=rows, colLabels=columns, loc="center",
-                   cellLoc="center")
+    table = table_ax.table(cellText=rows, colLabels=columns, loc="center",
+                           cellLoc="center", bbox=(0, 0, 1, 1))
+    table.auto_set_font_size(False)
+    table.set_fontsize(14)
+    table.scale(1, 1.5)
+    for column in range(len(columns)):
+        header_cell = table[(0, column)]
+        header_cell.set_height(header_cell.get_height() * 1.5)
     fig.suptitle("Autofocus Minimizer Comparison \n"
                  f"(plots show the middle frame of {_NFRAMES} frames)")
-    plt.savefig("compare_minimizers.png", dpi=150, bbox_inches="tight")
+    plt.savefig(Path(__file__).with_suffix(".png"), dpi=150,
+                bbox_inches="tight")
 
 
 if __name__ == "__main__":

@@ -19,8 +19,8 @@ def minimize_legacy_cupy(rf, metric_func, interval, roi=None, coarse_acc=1,
     rf :  nrefocus.iface.Refocus
         Refocusing interface backed by CuPy.
     metric_func : callable
-        Metric function. Currently only ``metric_average_gradient`` is
-        supported; it is evaluated over the final two spatial axes.
+        Registered metric function. It must return one score per candidate
+        distance when given a distance vector. Spectrum does not support ROI.
     interval : tuple of float
         Inclusive search bounds in the same units accepted by ``rf``.
     roi : tuple of slices, optional
@@ -49,9 +49,6 @@ def minimize_legacy_cupy(rf, metric_func, interval, roi=None, coarse_acc=1,
     """
     if not xp.is_cupy():
         raise RuntimeError("minimize_legacy_cupy requires the CuPy backend.")
-    if metric_func.__name__ != "metric_average_gradient":
-        raise ValueError("The batched CuPy minimizer currently supports only "
-                         "the 'average gradient' metric.")
     warnings.warn("The 'legacy_cupy' minimizer follows the legacy "
                   "coarse-to-fine "
                   "search strategy. The legacy minimizer is deprecated; "
@@ -68,13 +65,7 @@ def minimize_legacy_cupy(rf, metric_func, interval, roi=None, coarse_acc=1,
         # (candidate, y, x) batch. CuPy can process independent candidate
         # planes concurrently here, instead of launching one propagation per
         # candidate from a Python loop as 'legacy' minimizer does.
-        fields = xp.abs(rf.propagate(distances))
-        if roi is not None:
-            fields = fields[(slice(None),) + roi]
-
-        # Compute gradients only along spatial axes
-        gy, gx = xp.gradient(fields, axis=(-2, -1))
-        return xp.mean(gy ** 2 + gx ** 2, axis=(-2, -1)) / 2
+        return metric_func(rf, distance=distances, roi=roi)
 
     # Coarse candidates are independent, so evaluate them together with CuPy
     gradc = evaluate(zc)

@@ -1,6 +1,7 @@
 import pathlib
 
 import numpy as np
+import pytest
 
 import nrefocus
 
@@ -198,3 +199,48 @@ def test_lmfit_cupy_agrees_with_lmfit(set_ndarray_backend_to_cupy,
     assert grid.ndim == values.ndim == 1
     assert grid.shape == values.shape
     assert np.allclose(focused.get(), rf.propagate(distance_gpu).get())
+
+
+@skip_if_missing("cupy")
+@pytest.mark.parametrize("metric", nrefocus.metrics.METRICS)
+def test_cupy_metrics_evaluate_batched_distances(set_ndarray_backend_to_cupy,
+                                                  metric):
+    """Each registered metric returns one score per propagated plane."""
+    import cupy as cp
+
+    rng = np.random.default_rng(11)
+    field = rng.normal(size=(18, 14)) + 1j * rng.normal(size=(18, 14))
+    rf = nrefocus.RefocusCupy(
+        field=field, wavelength=8.25, pixel_size=1, medium_index=1.333,
+        kernel="helmholtz", padding=False)
+    roi = None if metric == "spectrum" else (slice(1, 17), slice(1, 13))
+    metric_func = nrefocus.metrics.METRICS[metric]
+    distances = cp.asarray([-2.0, 0.0, 2.0])
+
+    scores = metric_func(rf, distances, roi=roi)
+    scalar_scores = np.asarray([
+        float(metric_func(rf, distance, roi=roi).get())
+        for distance in (-2.0, 0.0, 2.0)
+    ])
+    assert scores.shape == (len(distances),)
+    assert np.allclose(scores.get(), scalar_scores)
+
+
+@skip_if_missing("cupy")
+@pytest.mark.parametrize("minimizer", ("legacy_cupy", "lmfit_cupy"))
+@pytest.mark.parametrize("metric", nrefocus.metrics.METRICS)
+def test_cupy_minimizers_accept_registered_metrics(
+        set_ndarray_backend_to_cupy, minimizer, metric):
+    """Both CuPy minimizers accept all metrics, respecting spectrum ROI rules."""
+    rng = np.random.default_rng(12)
+    field = rng.normal(size=(18, 14)) + 1j * rng.normal(size=(18, 14))
+    rf = nrefocus.RefocusCupy(
+        field=field, wavelength=8.25, pixel_size=1, medium_index=1.333,
+        kernel="helmholtz", padding=False)
+    roi = None if metric == "spectrum" else (1, 1, 17, 13)
+    distance = rf.autofocus(
+        interval=(-4, 4), metric=metric, minimizer=minimizer, roi=roi,
+        minimizer_kwargs=({"coarse_acc": 2} if minimizer == "legacy_cupy"
+                          else {"coarse_step": 1}))
+    assert np.isfinite(float(distance.get()))
+    assert -4 <= float(distance.get()) <= 4

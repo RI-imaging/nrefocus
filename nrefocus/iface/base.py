@@ -178,7 +178,7 @@ class Refocus(ABC):
               <lmfit.minimizer.minimize>`); with CuPy, the optimizer runs on
               the CPU and each scalar metric evaluation runs on the GPU.
             - "lmfit_cupy": CuPy-native one-parameter LM refinement for the
-              average-gradient metric.
+              registered metrics (the spectrum metric does not support ROI).
         roi: list or tuple or slice or ndarray
             Region of interest for which the metric will be minimized.
             The axes below use the numpy indexing order.

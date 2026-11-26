@@ -20,14 +20,17 @@ def metric_spectrum(rfi, distance, roi=None, **kwargs):
     fftdata = rfi.fft_origin * kernel
 
     # Filter Fourier transform
-    fftdata[0, 0] = 0
-    kx = 2 * xp.pi * xp.fft.fftfreq(fftdata.shape[0]).reshape(1, -1)
-    ky = 2 * xp.pi * xp.fft.fftfreq(fftdata.shape[1]).reshape(-1, 1)
+    fftdata[..., 0, 0] = 0
+    kx = 2 * xp.pi * xp.fft.fftfreq(fftdata.shape[-1]).reshape(1, 1, -1)
+    ky = 2 * xp.pi * xp.fft.fftfreq(fftdata.shape[-2]).reshape(1, -1, 1)
     kmax = (2 * xp.pi) / (2 * wavelength_px)
-    fftdata[xp.where(kx ** 2 + ky ** 2 > kmax ** 2)] = 0
+    if fftdata.ndim == 2:
+        kx = kx.reshape(1, -1)
+        ky = ky.reshape(-1, 1)
+    fftdata = xp.where(kx ** 2 + ky ** 2 > kmax ** 2, 0, fftdata)
 
-    spec = xp.sum(xp.log(1 + xp.abs(fftdata))) / xp.sqrt(
-        xp.prod(xp.array(rfi.shape))
+    spec = xp.sum(xp.log(1 + xp.abs(fftdata)), axis=(-2, -1)) / xp.sqrt(
+        xp.prod(xp.array(rfi.shape[-2:]))
     )
 
     return spec

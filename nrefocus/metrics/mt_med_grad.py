@@ -10,5 +10,7 @@ def metric_med_gradient(rfi, distance, roi=None, **kwargs):
     """
     data = xp.abs(rfi.propagate(distance))
     if roi is not None:
-        data = data[roi]
-    return xp.median(xp.array(xp.gradient(data))**2)
+        data = data[(slice(None),) * (data.ndim - 2) + roi]
+    gradients = xp.gradient(data, axis=(-2, -1))
+    return xp.median(xp.stack(gradients, axis=-3) ** 2,
+                     axis=(-3, -2, -1))

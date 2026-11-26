@@ -10,7 +10,7 @@ def _minimize_lmfit_cupy(rf, metric_func, interval, roi=None,
                          xtol=1e-8, fd_step=1e-4,
                          initial_damping=1e-6,
                          ret_grid=False, ret_field=False):
-    """Minimize average gradient with a CuPy-resident LM refinement.
+    """Minimize a registered metric with a CuPy-resident LM refinement.
 
     The search mirrors the project's ``lmfit`` strategy: sample the interval
     every ``coarse_step`` wavelengths, then refine around the best coarse
@@ -24,7 +24,7 @@ def _minimize_lmfit_cupy(rf, metric_func, interval, roi=None,
     rf : Refocus
         Refocusing interface backed by CuPy.
     metric_func : callable
-        Must be ``metric_average_gradient``.
+        Registered metric function. Spectrum does not support ROI.
     interval : tuple of float
         Inclusive distance bounds in the units used by ``rf``.
     roi : tuple of slices, optional
@@ -64,9 +64,6 @@ def _minimize_lmfit_cupy(rf, metric_func, interval, roi=None,
     """
     if not xp.is_cupy():
         raise RuntimeError("minimize_lmfit_cupy requires the CuPy backend.")
-    if metric_func.__name__ != "metric_average_gradient":
-        raise ValueError("The CuPy LM minimizer currently supports only the "
-                         "'average gradient' metric.")
     if coarse_step <= 0 or fd_step <= 0 or initial_damping <= 0:
         raise ValueError("coarse_step, fd_step, and initial_damping must be "
                          "positive.")
@@ -92,11 +89,8 @@ def _minimize_lmfit_cupy(rf, metric_func, interval, roi=None,
 
     def evaluate(wavelength_distances):
         """Evaluate one batch of candidate focus distances on the GPU."""
-        fields = xp.abs(rf.propagate(wavelength_distances * rf.wavelength))
-        if roi is not None:
-            fields = fields[(slice(None),) + roi]
-        gy, gx = xp.gradient(fields, axis=(-2, -1))
-        return xp.mean(gy ** 2 + gx ** 2, axis=(-2, -1)) / 2
+        return metric_func(
+            rf, distance=wavelength_distances * rf.wavelength, roi=roi)
 
     coarse_metric = evaluate(coarse_grid)
     best_index = xp.argmin(coarse_metric)

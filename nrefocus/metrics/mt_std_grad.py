@@ -10,5 +10,6 @@ def metric_std_gradient(rfi, distance, roi=None, **kwargs):
     """
     data = xp.abs(rfi.propagate(distance))
     if roi is not None:
-        data = data[roi]
-    return xp.std(xp.array(xp.gradient(data)))
+        data = data[(slice(None),) * (data.ndim - 2) + roi]
+    gradients = xp.gradient(data, axis=(-2, -1))
+    return xp.std(xp.stack(gradients, axis=-3), axis=(-3, -2, -1))

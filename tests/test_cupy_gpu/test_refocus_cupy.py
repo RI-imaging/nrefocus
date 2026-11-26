@@ -227,8 +227,8 @@ def test_lmfit_cupy_agrees_with_lmfit(set_ndarray_backend_to_cupy,
 
 @skip_if_missing("cupy")
 @pytest.mark.parametrize("metric", nrefocus.metrics.METRICS)
-def test_cupy_metrics_evaluate_batched_distances(set_ndarray_backend_to_cupy,
-                                                  metric):
+def test_cupy_metrics_evaluate_batched_distances(
+        set_ndarray_backend_to_cupy, metric):
     """Each registered metric returns one score per propagated plane."""
     import cupy as cp
 
@@ -255,7 +255,7 @@ def test_cupy_metrics_evaluate_batched_distances(set_ndarray_backend_to_cupy,
 @pytest.mark.parametrize("metric", nrefocus.metrics.METRICS)
 def test_cupy_minimizers_accept_registered_metrics(
         set_ndarray_backend_to_cupy, minimizer, metric):
-    """Both CuPy minimizers accept all metrics, respecting spectrum ROI rules."""
+    """Both CuPy minimizers accept all metrics"""
     rng = np.random.default_rng(12)
     field = rng.normal(size=(18, 14)) + 1j * rng.normal(size=(18, 14))
     rf = nrefocus.RefocusCupy(

@@ -1,3 +1,7 @@
+0.8.1
+ - enh: parallelise a new version of the legacy minimizer for gpu use (#30)
+ - enh: extend lmfit cpu-based minimizer so it can be used by RefocusCupy (#30)
+ - enh: add convenience function for stacks of autofocus on the gpu (#30)
 0.8.0
  - feat: allow user to specify input and output domains (#26, #27)
 0.7.0

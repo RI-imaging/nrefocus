@@ -84,7 +84,35 @@ def test_prop_kernel_backends(kernel):
     assert np.allclose(fft_kernel_np, fft_kernel_cp)
 
 
-def test_prop_kernel_bad():
+@skip_if_missing("cupy")
+@pytest.mark.parametrize(
+    "kernel", [("helmholtz"), ("fresnel"), ]
+)
+def test_prop_kernel_backends_multiple_distances(kernel):
+    """compare cupy and numpy backend outputs for kernels"""
+    pixel_size = 1e-6
+    distance = 2.13 * pixel_size
+    # use muliple distances for parallel kernel calculations
+    distances = np.array([distance, distance, distance])
+
+    nrefocus.set_ndarray_backend("numpy")
+    xp = nrefocus.get_ndarray_backend()
+    rf_np = nrefocus.RefocusNumpy(
+        xp.arange(256).reshape(16, 16), 8.25 * pixel_size, pixel_size,
+        medium_index=1.533, distance=0, kernel=kernel, padding=False)
+    fft_kernel_np = rf_np.get_kernel(distance=distances)
+
+    nrefocus.set_ndarray_backend("cupy")
+    xp = nrefocus.get_ndarray_backend()
+    rf_cp = nrefocus.RefocusCupy(
+        xp.arange(256).reshape(16, 16), 8.25 * pixel_size, pixel_size,
+        medium_index=1.533, distance=0, kernel=kernel, padding=False)
+    fft_kernel_cp = rf_cp.get_kernel(distance=xp.asarray(distances))
+
+    assert np.allclose(fft_kernel_np, fft_kernel_cp.get())
+
+
+def test_prop_kernel_bad_name():
     pixel_size = 1e-6
     distance = 2.13 * pixel_size
     kernel = "laplandian"
@@ -98,4 +126,20 @@ def test_prop_kernel_bad():
                                padding=False)
     with pytest.raises(KeyError):
         # at this point the kernel name is checked
+        _ = rf.get_kernel(distance=distance)
+
+
+def test_prop_kernel_bad_distance_type():
+    pixel_size = 1e-6
+    distance = [2.13 * pixel_size]
+
+    rf = nrefocus.RefocusNumpy(field=np.arange(256).reshape(16, 16),
+                               wavelength=8.25 * pixel_size,
+                               pixel_size=pixel_size,
+                               medium_index=1.533,
+                               distance=0,
+                               kernel="helmholtz",
+                               padding=False)
+    with pytest.raises(ValueError):
+        # lists are not allowed
         _ = rf.get_kernel(distance=distance)

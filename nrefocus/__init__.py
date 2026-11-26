@@ -1,5 +1,6 @@
 # flake8: noqa: F401
 from .autof import autofocus, autofocus_stack
+from .autof_cupy import autofocus_stack_cupy
 from .propg import refocus, refocus_stack
 from . import pad
 from .iface import RefocusNumpy, RefocusNumpy1D, RefocusPyFFTW, RefocusCupy, \

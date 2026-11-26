@@ -104,6 +104,30 @@ def test_autofocus_cupy_stack_per_frame(set_ndarray_backend_to_cupy):
 
 
 @skip_if_missing("cupy")
+def test_autofocus_stack_cupy_accepts_fourier_input(
+        set_ndarray_backend_to_cupy):
+    """Shifted Fourier input autofocus matches spatial input autofocus."""
+    rng = np.random.default_rng(2)
+    stack = (rng.normal(size=(2, 16, 12)) +
+             1j * rng.normal(size=(2, 16, 12)))
+    fourier_stack = np.fft.fftshift(
+        np.fft.fft2(stack, axes=(-2, -1)), axes=(-2, -1))
+    kwargs = dict(nm=1.333, res=8.25, ival=(-4, 4),
+                  minimizer="legacy_cupy", padding=False, num_streams=1)
+
+    spatial_distances, spatial_focused = nrefocus.autofocus_stack_cupy(
+        stack, **kwargs)
+    fourier_distances, fourier_focused = nrefocus.autofocus_stack_cupy(
+        fourier_stack, input_domain="fourier", **kwargs)
+
+    assert np.allclose(
+        [float(distance.get()) for distance in fourier_distances],
+        [float(distance.get()) for distance in spatial_distances])
+    assert np.allclose(fourier_focused.get(), spatial_focused.get(),
+                       rtol=1e-12, atol=1e-12)
+
+
+@skip_if_missing("cupy")
 def test_legacy_cupy_minimizer_matches_legacy_minimizer(
         set_ndarray_backend_to_cupy):
     """The batched legacy CuPy minimizer matches the NumPy legacy result."""

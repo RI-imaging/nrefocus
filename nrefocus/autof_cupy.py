@@ -8,7 +8,8 @@ from . import iface
 def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
                          metric="average gradient", minimizer="legacy_cupy",
                          minimizer_kwargs=None, padding=True,
-                         num_streams=4, copy=True):
+                         num_streams=1, copy=True,
+                         input_domain="spatial"):
     """Autofocus each 2D frame in a stack using CuPy CUDA streams.
 
     Each frame gets an independent focus search. Up to ``num_streams`` frame
@@ -43,12 +44,17 @@ def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
         ``"lmfit"`` accepts options through its ``lmfitkw`` argument.
     padding : bool
         Apply spatial padding before propagation.
+        Ignored when ``input_domain="fourier"``.
     num_streams : int
         Maximum number of independent frame searches to submit concurrently.
         For small jobs, keep this at 1, as using more streams will increase
         overhead.
     copy : bool
         Copy the input stack to device memory when it is already a CuPy array.
+    input_domain : {"spatial", "fourier"}
+        Interpret the input as spatial-domain fields or as precomputed Fourier
+        fields. Fourier input must use the fftshifted convention used by
+        qpretrieve's ``fft_used``.
 
     Returns
     -------
@@ -90,6 +96,7 @@ def autofocus_stack_cupy(fieldstack, nm, res, ival, roi=None,
                 distance=0,
                 kernel="helmholtz",
                 padding=padding,
+                input_domain=input_domain,
             )
             return rf.autofocus(
                 metric=metric,
